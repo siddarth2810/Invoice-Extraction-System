@@ -5,6 +5,7 @@ import { RootState } from './redux/store';
 import { setData } from './redux/slices/dataSlice';
 import { generateContent } from './pages/backend';
 import { setActiveTab } from './redux/slices/tabSlice';
+import { useState } from 'react';
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -12,10 +13,19 @@ export default function Home() {
   const products = useSelector((state: RootState) => state.data.products);
   const invoices = useSelector((state: RootState) => state.data.invoices);
   const activeTab = useSelector((state: RootState) => state.tab.activeTab);
-
+  const [file, setFile] = useState<File | null>(null);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    setFile(selectedFile || null);
+  };
 
 
   const handleGenerate = async () => {
+    if (!file) {
+      alert('Please upload a PDF first');
+      return;
+    }
+
     try {
       const extractedData = await generateContent();
       dispatch(setData(extractedData));
@@ -26,12 +36,19 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center space-x-4">
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={handleFileChange}
+          className="file:mr-4 file:rounded-md file:border-0 file:bg-blue-500 file:text-white file:px-4 file:py-2"
+        />
         <button
           onClick={handleGenerate}
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          disabled={!file}
+          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
-          Generate Customer Data
+          Generate Data
         </button>
       </div>
       {/* Tab Navigation */}
