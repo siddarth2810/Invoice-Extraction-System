@@ -1,0 +1,78 @@
+// store/slices/dataSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+const initialState: AppState = {
+  products: [],
+  customers: [],
+  invoices: [],
+  loading: false,
+  error: null
+};
+
+const dataSlice = createSlice({
+  name: 'data',
+  initialState,
+  reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    // Add extracted data
+    addExtractedData: (state, action: PayloadAction<{
+      products: Product[];
+      customers: Customer[];
+      invoices: Invoice[];
+    }>) => {
+      state.products.push(...action.payload.products);
+      state.customers.push(...action.payload.customers);
+      state.invoices.push(...action.payload.invoices);
+    },
+    // Update product (will affect invoices)
+    updateProduct: (state, action: PayloadAction<Product>) => {
+      const index = state.products.findIndex(p => p.id === action.payload.id);
+      if (index !== -1) {
+        state.products[index] = action.payload;
+        // Update related invoices
+        state.invoices = state.invoices.map(invoice => {
+          if (invoice.productId === action.payload.id) {
+            return {
+              ...invoice,
+              productName: action.payload.name,
+              // Update other related fields as needed
+            };
+          }
+          return invoice;
+        });
+      }
+    },
+    // Update customer (will affect invoices)
+    updateCustomer: (state, action: PayloadAction<Customer>) => {
+      const index = state.customers.findIndex(c => c.id === action.payload.id);
+      if (index !== -1) {
+        state.customers[index] = action.payload;
+        // Update related invoices
+        state.invoices = state.invoices.map(invoice => {
+          if (invoice.customerId === action.payload.id) {
+            return {
+              ...invoice,
+              customerName: action.payload.name,
+            };
+          }
+          return invoice;
+        });
+      }
+    },
+  },
+});
+
+export const {
+  setLoading,
+  setError,
+  addExtractedData,
+  updateProduct,
+  updateCustomer
+} = dataSlice.actions;
+export default dataSlice;
+
