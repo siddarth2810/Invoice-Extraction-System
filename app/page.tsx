@@ -1,52 +1,3 @@
-//'use client'
-// app/page.tsx
-//'use client';
-//
-//import { useSelector, useDispatch } from 'react-redux';
-//import { RootState } from './redux/store';
-//import { increment, decrement } from './redux/slices/counter';
-//
-//export default function Home() {
-//  const count = useSelector((state: RootState) => state.counter);
-//  const dispatch = useDispatch();
-//
-//  return (
-//    <div className="p-4">
-//      <h1>Count: {count}</h1>
-//      <button onClick={() => dispatch(increment())}>Increment</button>
-//      <button onClick={() => dispatch(decrement())}>Decrement</button>
-//    </div>
-//  );
-//}
-// here is working model
-// app/page.tsx
-//'use client';
-//
-//import { useState } from 'react';
-//import { useSelector, useDispatch } from 'react-redux';
-//import { setData } from './redux/slices/dataSlice';
-//import { generateContent } from './pages/backend';
-//
-//export default function Home() {
-//  //const [isLoading, setIsLoading] = useState(false);
-//  // const [error, setError] = useState<string | null>(null);
-//  // const products = useSelector((state) => state.data.products);
-//  const dispatch = useDispatch();
-//
-//  const handleFile = async () => {
-//    const extractedData = await generateContent();
-//    console.log(extractedData);
-//    dispatch(setData(extractedData));
-//  };
-//
-//  return (
-//    <main className="p-8">
-//      <button onClick={handleFile}>Generate</button>
-//    </main>
-//  );
-//}
-//
-//
 'use client';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -107,7 +58,7 @@ export default function Home() {
           </table>
         </div>
       ) : (
-        <p className="text-gray-500">No customer data available. Click 'Generate Data' to fetch.</p>
+        <p className="text-gray-500">No customer data available. Click Generate Data to fetch.</p>
       )}
     </main>
   );
