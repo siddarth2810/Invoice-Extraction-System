@@ -1,64 +1,31 @@
-//'use client'
-// app/page.tsx
-//'use client';
-//
-//import { useSelector, useDispatch } from 'react-redux';
-//import { RootState } from './redux/store';
-//import { increment, decrement } from './redux/slices/counter';
-//
-//export default function Home() {
-//  const count = useSelector((state: RootState) => state.counter);
-//  const dispatch = useDispatch();
-//
-//  return (
-//    <div className="p-4">
-//      <h1>Count: {count}</h1>
-//      <button onClick={() => dispatch(increment())}>Increment</button>
-//      <button onClick={() => dispatch(decrement())}>Decrement</button>
-//    </div>
-//  );
-//}
-// here is working model
-// app/page.tsx
-//'use client';
-//
-//import { useState } from 'react';
-//import { useSelector, useDispatch } from 'react-redux';
-//import { setData } from './redux/slices/dataSlice';
-//import { generateContent } from './pages/backend';
-//
-//export default function Home() {
-//  //const [isLoading, setIsLoading] = useState(false);
-//  // const [error, setError] = useState<string | null>(null);
-//  // const products = useSelector((state) => state.data.products);
-//  const dispatch = useDispatch();
-//
-//  const handleFile = async () => {
-//    const extractedData = await generateContent();
-//    console.log(extractedData);
-//    dispatch(setData(extractedData));
-//  };
-//
-//  return (
-//    <main className="p-8">
-//      <button onClick={handleFile}>Generate</button>
-//    </main>
-//  );
-//}
-//
-//
 'use client';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './redux/store';
 import { setData } from './redux/slices/dataSlice';
 import { generateContent } from './pages/backend';
+import { setActiveTab } from './redux/slices/tabSlice';
+import { useState } from 'react';
 
 export default function Home() {
   const dispatch = useDispatch();
   const customers = useSelector((state: RootState) => state.data.customers);
+  const products = useSelector((state: RootState) => state.data.products);
+  const invoices = useSelector((state: RootState) => state.data.invoices);
+  const activeTab = useSelector((state: RootState) => state.tab.activeTab);
+  const [file, setFile] = useState<File | null>(null);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    setFile(selectedFile || null);
+  };
+
 
   const handleGenerate = async () => {
+    if (!file) {
+      alert('Please upload a PDF first');
+      return;
+    }
+
     try {
       const extractedData = await generateContent();
       dispatch(setData(extractedData));
@@ -68,47 +35,138 @@ export default function Home() {
   };
 
   return (
-    <main className="p-8">
-      <div className="mb-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex items-center space-x-4">
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={handleFileChange}
+          className="file:mr-4 file:rounded-md file:border-0 file:bg-blue-500 file:text-white file:px-4 file:py-2"
+        />
         <button
           onClick={handleGenerate}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          disabled={!file}
+          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
           Generate Data
         </button>
       </div>
+      {/* Tab Navigation */}
+      <div className="flex mb-4 space-x-4">
+        {(['customers', 'products', 'invoices'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => dispatch(setActiveTab(tab))}
+            className={`px-4 py-2 rounded-md transition-colors ${activeTab === tab
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
 
-      {customers && customers.length > 0 ? (
-        <div className="overflow-x-auto">
-          <h2 className="text-2xl font-bold mb-4">Customers</h2>
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-6 py-3 border-b text-left">ID</th>
-                <th className="px-6 py-3 border-b text-left">Name</th>
-                <th className="px-6 py-3 border-b text-left">Phone Number</th>
-                <th className="px-6 py-3 border-b text-right">Total Purchase Amount</th>
+      {/* Customers */}
+      {activeTab === 'customers' && customers.length > 0 ? (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-100 border-b">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchases</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200">
               {customers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-b">{customer.id || 'N/A'}</td>
-                  <td className="px-6 py-4 border-b">{customer.name || 'N/A'}</td>
-                  <td className="px-6 py-4 border-b">{customer.phoneNumber || 'N/A'}</td>
-                  <td className="px-6 py-4 border-b text-right">
-                    ${typeof customer.totalPurchaseAmount === 'number'
-                      ? customer.totalPurchaseAmount.toFixed(2)
-                      : '0.00'}
+                <tr
+                  key={customer.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{customer.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{customer.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    ${customer.totalPurchaseAmount.toFixed(2)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : (
-        <p className="text-gray-500">No customer data available. Click 'Generate Data' to fetch.</p>
+      ) : activeTab === 'customers' && customers.length === 0 && (
+        <p className="text-gray-500 text-center py-4">No customer data available</p>
       )}
-    </main>
+
+      {/* Products */}
+      {activeTab === 'products' && products.length > 0 ? (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-100 border-b">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr
+                  key={product.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.unitPrice}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.tax}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.priceWithTax}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : activeTab === 'products' && products.length === 0 && (
+        <p className="text-gray-500 text-center py-4">No product data available</p>
+      )}
+
+      {/* Invoices */}
+      {activeTab === 'invoices' && invoices.length > 0 ? (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-100 border-b">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serial Number</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {invoices.map((invoice) => (
+                <tr
+                  key={invoice.serialNumber}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.serialNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.customerName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.productName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.tax}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.totalAmount}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{invoice.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : activeTab === 'invoices' && invoices.length === 0 && (
+        <p className="text-gray-500 text-center py-4">No invoice data available</p>
+      )}
+    </div>
   );
 }

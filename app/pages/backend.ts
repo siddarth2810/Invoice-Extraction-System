@@ -60,20 +60,60 @@ export async function generateContent(): Promise<ExtractedData> {
 		const extractedData = JSON.parse(cleanedText);
 
 		// Validate and sanitize data
-		const sanitizedData = {
-			products: Array.isArray(extractedData.products) ? extractedData.products : [],
+		const sanitizedData: ExtractedData = {
+			products: Array.isArray(extractedData.products)
+				? extractedData.products.map((product: {
+					id?: string,
+					name?: string,
+					quantity?: number,
+					unitPrice?: number,
+					tax?: number,
+					priceWithTax?: number
+				}) => ({
+					id: product.id || crypto.randomUUID().toString().substring(0, 10),
+					name: product.name || 'Unknown',
+					quantity: product.quantity || 0,
+					unitPrice: product.unitPrice || 0,
+					tax: product.tax || 0,
+					priceWithTax: product.priceWithTax || 0
+				}))
+				: [],
 			customers: Array.isArray(extractedData.customers)
-				? extractedData.customers.map(customer => ({
-					id: customer.id || crypto.randomUUID(),
+				? extractedData.customers.map((customer: {
+					id?: string,
+					name?: string,
+					phoneNumber?: string,
+					totalPurchaseAmount?: number
+				}) => ({
+					id: customer.id || crypto.randomUUID().toString().substring(0, 10),
 					name: customer.name || 'Unknown',
-					phoneNumber: customer.phoneNumber || 'N/A',
+					phoneNumber: customer.phoneNumber || '',
 					totalPurchaseAmount: typeof customer.totalPurchaseAmount === 'number'
 						? customer.totalPurchaseAmount
 						: 0
 				}))
 				: [],
-			invoices: Array.isArray(extractedData.invoices) ? extractedData.invoices : []
+			invoices: Array.isArray(extractedData.invoices)
+				? extractedData.invoices.map((invoice: {
+					serialNumber?: string,
+					customerName?: string,
+					productName?: string,
+					quantity?: number,
+					tax?: number,
+					totalAmount?: number,
+					date?: string
+				}) => ({
+					serialNumber: invoice.serialNumber || 'Unknown',
+					customerName: invoice.customerName || 'Unknown',
+					productName: invoice.productName || 'Unknown',
+					quantity: invoice.quantity || 0,
+					tax: invoice.tax || 0,
+					totalAmount: invoice.totalAmount || 0,
+					date: invoice.date || 'Unknown',
+				}))
+				: []
 		};
+
 
 		return sanitizedData;
 	} catch (error) {
