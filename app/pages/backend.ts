@@ -61,10 +61,19 @@ export async function generateContent(): Promise<ExtractedData> {
 
 		// Validate and sanitize data
 		const sanitizedData = {
-			products: Array.isArray(extractedData.products) ? extractedData.products : [],
+			products: Array.isArray(extractedData.products) ? extractedData.products.map(product => ({
+				id: product.id || crypto.randomUUID().toString().substring(0, 10),
+				name: product.name || 'Unknown',
+				quantity: product.quantity || 'N/A',
+				unitPrice: product.unitPrice || 'N/A',
+				tax: product.tax || 'N/A',
+				priceWithTax: product.priceWithTax || 'N/A'
+
+			})) : [],
+
 			customers: Array.isArray(extractedData.customers)
 				? extractedData.customers.map(customer => ({
-					id: customer.id || crypto.randomUUID(),
+					id: customer.id || crypto.randomUUID().toString().substring(0, 10),
 					name: customer.name || 'Unknown',
 					phoneNumber: customer.phoneNumber || 'N/A',
 					totalPurchaseAmount: typeof customer.totalPurchaseAmount === 'number'
@@ -72,7 +81,15 @@ export async function generateContent(): Promise<ExtractedData> {
 						: 0
 				}))
 				: [],
-			invoices: Array.isArray(extractedData.invoices) ? extractedData.invoices : []
+			invoices: Array.isArray(extractedData.invoices) ? extractedData.invoices.map(invoice => ({
+				serialNumber: invoice.serialNumber || 'Unknown',
+				customerName: invoice.customerName || 'Unknown',
+				invoiceName: invoice.invoiceName || 'Unknown',
+				quantity: invoice.quantity || 'N/A',
+				tax: invoice.tax || 'N/A',
+				totalAmount: invoice.totalAmount || 'N/A',
+				date: invoice.date || 'Unknown',
+			})) : []
 		};
 
 		return sanitizedData;

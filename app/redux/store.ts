@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { counterSlice } from "./slices/counter"
 import { dataSlice } from "./slices/dataSlice"
+import { tabSlice } from "./slices/tabSlice"
 
 export const store = configureStore({
   reducer: {
-    counter: counterSlice.reducer,
-    data: dataSlice.reducer
+    data: dataSlice.reducer,
+    tab: tabSlice.reducer
   },
 })
 
