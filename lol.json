@@ -843,4 +843,64 @@ Parsed Extracted Data: {
  POST / 200 in 21086ms
 ^C
 ➜  data-extraction git:(upload-pdf) ✗
-
+// kfsdjfljdsldjfslj
+{
+  invoices: [
+    {
+      id: 'INV-54CZS',
+      serialNumber: 'INV-54CZS',
+      totalAmount: 0,
+      date: '04 Nov 2024'
+    }
+  ],
+  products: [
+    {
+      id: '1',
+      productName: 'Unknown Product',
+      quantity: 1,
+      unitPrice: 0,
+      tax: 0,
+      priceWithTax: 0
+    },
+    {
+      id: '32',
+      productName: 'Unknown Product',
+      quantity: 0,
+      unitPrice: 0,
+      tax: 0,
+      priceWithTax: 60
+    }
+  ],
+  customers: [
+    {
+      id: '66af29f5-f42c-44d4-9b18-946e8b0212a7',
+      customerName: 'Unknown Customer',
+      phoneNumber: '',
+      totalPurchaseAmount: 0
+    }
+  ],
+  finalData: {
+    '1': {
+      id: 1,
+      invoiceId: 'INV-54CZS',
+      customerName: 'Unknown Customer',
+      productName: 'Unknown Product',
+      quantity: 1,
+      unitPrice: 0,
+      tax: 0,
+      priceWithTax: 0,
+      date: '04 Nov 2024'
+    },
+    '2': {
+      id: 2,
+      invoiceId: 'INV-54CZS',
+      customerName: 'Unknown Customer',
+      productName: 'Unknown Product',
+      quantity: 0,
+      unitPrice: 0,
+      tax: 0,
+      priceWithTax: 60,
+      date: '04 Nov 2024'
+    }
+  }
+}

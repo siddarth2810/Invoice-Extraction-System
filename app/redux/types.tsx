@@ -27,11 +27,22 @@ export interface Invoice {
   totalAmount: number;
   date: string;
 }
-
+export interface FinalDataItem {
+  id: number;
+  invoiceId: string | null;
+  customerName: string | null;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  tax: number;
+  priceWithTax: number;
+  date: string | null;
+}
 export interface AppState {
   products: Product[];
   customers: Customer[];
   invoices: Invoice[];
+  finalData: FinalDataItem[];
   loading: boolean;
   error: string | null;
 }

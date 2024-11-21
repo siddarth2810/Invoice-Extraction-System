@@ -22,6 +22,7 @@ export default function Home() {
   const customers = useSelector((state: RootState) => state.data.customers);
   const products = useSelector((state: RootState) => state.data.products);
   const invoices = useSelector((state: RootState) => state.data.invoices);
+  const finalData = useSelector((state: RootState) => state.data.finalData);
   const activeTab = useSelector((state: RootState) => state.tab.activeTab);
   const [file, setFile] = useState<File | null>(null);
 
@@ -199,6 +200,44 @@ export default function Home() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           {product.priceWithTax.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No product data available</p>
+            )}
+          </TabsContent>
+
+          {/* Products Table */}
+          <TabsContent value="finalData">
+            {finalData.length > 0 ? (
+              <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {finalData.map((FinalDataItem) => (
+                      <tr key={FinalDataItem.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.unitPrice.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.tax.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.priceWithTax.toFixed(2)}
                         </td>
                       </tr>
                     ))}

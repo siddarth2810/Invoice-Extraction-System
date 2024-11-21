@@ -1,11 +1,12 @@
 // store/slices/dataSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AppState, Product, Customer, Invoice } from "../types"
+import { AppState, Product, Customer, Invoice, FinalDataItem } from "../types"
 
 export const initialState: AppState = {
   products: [],
   customers: [],
   invoices: [],
+  finalData: [],
   loading: false,
   error: null
 };
@@ -24,10 +25,12 @@ export const dataSlice = createSlice({
       products: Product[];
       customers: Customer[];
       invoices: Invoice[];
+      finalData: FinalDataItem[];
     }>) => {
       state.products = action.payload.products;
       state.customers = action.payload.customers;
       state.invoices = action.payload.invoices;
+      state.finalData = action.payload.finalData;
     },
   },
 });
