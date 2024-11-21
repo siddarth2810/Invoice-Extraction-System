@@ -53,7 +53,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#faf4ed] text-[#575279] p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-[#907aa9]">Invoice Extraction</h1>
+        <h1 className="text-3xl font-bold mb-8 text-[#907aa9]">Invoice Data Extraction System</h1>
         <Card className="mb-8 bg-[#fffaf3] border-none shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center space-x-4">
@@ -98,167 +98,168 @@ export default function Home() {
             }
           }}
           className="w-full"
-        />
+        >
 
-        {/* Tab Navigation */}
-        <TabsList className="w-full bg-[#fffaf3] p-0 mb-4">
-          {(['customers', 'products', 'invoices', 'finalData'] as const).map((tab) => (
-            <TabsTrigger
-              key={tab}
-              value={tab}
-              className={`flex-1 py-2.5 data-[state=active]:bg-[#faf4ed] data-[state=active]:text-[#907aa9] rounded-none border-b-2 border-transparent data-[state=active]:border-[#907aa9]`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value="invoices">
-          {invoices.length > 0 ? (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serial Number</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {invoices.map((invoice) => (
-                    <tr
-                      key={invoice.serialNumber}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-right">{invoice.totalAmount.toFixed(2)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">{invoice.date}</td>
+          {/* Tab Navigation */}
+          <TabsList className="w-full bg-[#fffaf3] p-0 mb-4">
+            {(['customers', 'products', 'invoices', 'finalData'] as const).map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`flex-1 py-2.5 data-[state=active]:bg-[#faf4ed] data-[state=active]:text-[#907aa9] rounded-none border-b-2 border-transparent data-[state=active]:border-[#907aa9]`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value="invoices">
+            {invoices.length > 0 ? (
+              <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serial Number</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No invoice data available</p>
-          )}
-        </TabsContent>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {invoices.map((invoice) => (
+                      <tr
+                        key={invoice.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">{invoice.serialNumber}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">{invoice.totalAmount}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{invoice.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No invoice data available</p>
+            )}
+          </TabsContent>
 
-        {/* Customers Table */}
-        <TabsContent value="customers">
-          {customers.length > 0 ? (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchase Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {customers.map((customer) => (
-                    <tr
-                      key={customer.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">{customer.customerName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{customer.phoneNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {customer.totalPurchaseAmount.toFixed(2)}
-                      </td>
+          {/* Customers Table */}
+          <TabsContent value="customers">
+            {customers.length > 0 ? (
+              <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchase Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No customer data available</p>
-          )}
-        </TabsContent>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {customers.map((customer) => (
+                      <tr
+                        key={customer.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">{customer.customerName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{customer.phoneNumber}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {customer.totalPurchaseAmount.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No customer data available</p>
+            )}
+          </TabsContent>
 
-        {/* Products Table */}
-        <TabsContent value="products">
-          {products.length > 0 ? (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">{product.productName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {product.unitPrice.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {product.tax.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {product.priceWithTax.toFixed(2)}
-                      </td>
+          {/* Products Table */}
+          <TabsContent value="products">
+            {products.length > 0 ? (
+              <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No product data available</p>
-          )}
-        </TabsContent>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {products.map((product) => (
+                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">{product.productName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {product.unitPrice.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {product.tax.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {product.priceWithTax.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No product data available</p>
+            )}
+          </TabsContent>
 
-        {/* Products Table */}
-        <TabsContent value="finalData">
-          {finalData.length > 0 ? (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">invoice id</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">customer nam</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">product nam</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">quantity</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {finalData.map((FinalDataItem) => (
-                    <tr key={FinalDataItem.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.invoiceId}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.customerName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.productName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {FinalDataItem.unitPrice.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {FinalDataItem.tax.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {FinalDataItem.priceWithTax.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.date}</td>
+          {/* Products Table */}
+          <TabsContent value="finalData">
+            {finalData.length > 0 ? (
+              <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">invoice id</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">customer name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">product name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">quantity</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No product data available</p>
-          )}
-        </TabsContent>
-      </Tabs>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {finalData.map((FinalDataItem) => (
+                      <tr key={FinalDataItem.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.invoiceId}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.customerName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.productName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.unitPrice.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.tax.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {FinalDataItem.priceWithTax.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No product data available</p>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
 
 
-    </div>
     </div >
   );
 }

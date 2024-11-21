@@ -87,6 +87,7 @@ export async function generateContent(formData: FormData) {
 		const responseText = result.response.text();
 		console.log("Raw AI Response:", responseText);
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let extractedData: any;
 
 		try {
@@ -112,8 +113,8 @@ export async function generateContent(formData: FormData) {
 		// Process and validate the extracted data
 
 		// Read and parse the JSON file
-		//const filePath = path.join(process.cwd(), 'public', 'test.json');
-		//const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+		//	const filePath = path.join(process.cwd(), 'public', 'test.json');
+		//	const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 		const processedData = processExtractedData(extractedData);
 
 		console.log(processedData)
@@ -124,6 +125,7 @@ export async function generateContent(formData: FormData) {
 		throw new Error(error instanceof Error ? error.message : 'Failed to generate content');
 	}
 }
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function processExtractedData(data: any): ExtractedData {
 	const processedData: ExtractedData = {
 		invoices: [],
@@ -133,14 +135,25 @@ function processExtractedData(data: any): ExtractedData {
 	};
 
 	// Process invoices
-	processedData.invoices = [
-		{
+	if (data.invoices && Array.isArray(data.invoices)) {
+		processedData.invoices = data.invoices.map((invoice: any) => ({
+			id: invoice.id?.toString() || crypto.randomUUID(),
+			serialNumber: invoice.serialNumber || 'Unknown Invoice',
+			date: invoice.date || '',
+			totalAmount: Number(invoice.totalAmount) || 0
+		}));
+	} else if (data.invoiceNumber) {
+		// Fallback for the case when invoice data is not in an array
+		processedData.invoices = [{
 			id: crypto.randomUUID(),
 			serialNumber: data.invoiceNumber || 'Unknown Invoice',
 			date: data.invoiceDate || '',
-			totalAmount: Number(data.totalAmount) || 0 // Remove commas and convert to number
-		}
-	];
+			totalAmount: Number(data.totalAmount) || 0
+
+
+		}];
+
+	}
 
 	// Process products
 	if (data.products && Array.isArray(data.products)) {
@@ -149,7 +162,7 @@ function processExtractedData(data: any): ExtractedData {
 			productName: product.productName || 'Unknown Product',
 			quantity: Number(product.quantity) || 0,
 			unitPrice: Number(product.unitPrice) || 0,
-			tax: product.tax ? parseFloat(product.tax.replace('%', '')) : 0, // Convert tax to number
+			tax: product.tax ? parseFloat(product.tax.toString().replace('%', '')) : 0,
 			priceWithTax: Number(product.priceWithTax) || 0
 		}));
 	}
@@ -160,13 +173,13 @@ function processExtractedData(data: any): ExtractedData {
 			id: customer.id?.toString() || crypto.randomUUID(),
 			customerName: customer.customerName || 'Unknown Customer',
 			phoneNumber: customer.phoneNumber || '',
-			totalPurchaseAmount: 0
+			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || 0
 		}));
 	}
 
 	// Create finalData
 	processedData.finalData = processedData.products.map((product, index) => ({
-		id: index + 1, // Use index-based ID
+		id: index + 1,
 		invoiceId: processedData.invoices[0]?.serialNumber || null,
 		customerName: processedData.customers[0]?.customerName || null,
 		productName: product.productName,
@@ -179,7 +192,7 @@ function processExtractedData(data: any): ExtractedData {
 
 	return processedData;
 }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Example usage
 async function extractPdfOrImageContent(file: File): Promise<string> {
 	const arrayBuffer = await file.arrayBuffer();
