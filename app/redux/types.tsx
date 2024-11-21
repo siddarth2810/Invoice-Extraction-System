@@ -1,6 +1,6 @@
 export interface Product {
   id: string;
-  name: string;
+  productName: string;
   quantity: number;
   unitPrice: number;
   tax: number;
@@ -10,20 +10,21 @@ export interface Product {
 
 export interface Customer {
   id: string;
-  name: string;
+  customerName: string;
   phoneNumber: string;
   totalPurchaseAmount: number;
   // Additional fields can be added
 }
 
 export interface Invoice {
+  id: string;
   serialNumber: string;
   // customerId: string;
-  customerName: string;
+  //customerName: string;
   //productId: string;
-  productName: string;
-  quantity: number;
-  tax: number;
+  //productName: string;
+  //quantity: number;
+  //tax: number;
   totalAmount: number;
   date: string;
 }

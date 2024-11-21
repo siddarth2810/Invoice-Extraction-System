@@ -1,0 +1,73 @@
+{
+  "invoiceNumber": "INV-54CZS",
+  "invoiceDate": "04 Nov 2024",
+  "placeOfSupply": "Assam",
+  "products": [
+    {
+      "id": 1,
+      "productName": "gertgerg rfreferf",
+      "quantity": 1.000,
+      "unitPrice": 0.00,
+      "tax": null,
+      "priceWithTax": 0.00
+    },
+    {
+      "id": 2,
+      "productName": "INDIE MIX POHA 500GM",
+      "quantity": 1.000,
+      "unitPrice": 35.7143,
+      "tax": "5%",
+      "priceWithTax": 35.71
+    },
+    {
+      "id": 3,
+      "productName": "Oxygen",
+      "quantity": 1.000,
+      "unitPrice": 423.7288,
+      "tax": "18%",
+      "priceWithTax": 423.73
+    },
+    {
+      "id": 4,
+      "productName": "New backde",
+      "quantity": 1.000,
+      "unitPrice": 1000.00,
+      "tax": null,
+      "priceWithTax": 1000.00
+    },
+    {
+      "id": 5,
+      "productName": "FESTIVE DRESS - FROCK",
+      "quantity": 1.000,
+      "unitPrice": 1000.00,
+      "tax": null,
+      "priceWithTax": 1000.00
+    }
+  ],
+  "customers": [
+    {
+      "id": null,
+      "customerName": "Test Assam",
+      "phoneNumber": null
+    },
+    {
+      "id": null,
+      "customerName": "Assam",
+      "phoneNumber": null
+    }
+  ],
+  "totalAmount": 3061814.98,
+  "amountDue": 3070343.30,
+  "bankDetails": {
+    "bank": "Example Bank",
+    "accountNumber": "1234567890",
+    "ifscCode": "IFSC0001234",
+    "branch": "Main Branch",
+    "beneficiaryName": "Vishnu"
+  },
+  "extractionNotes": {
+    "customerIds": "Customer IDs are not explicitly mentioned in the invoice.",
+    "productIds": "Product IDs are inferred from the serial number in the invoice.",
+    "phoneNumbers": "Phone numbers are missing from the invoice."
+  }
+}

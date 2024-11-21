@@ -1,0 +1,283 @@
+{
+  invoiceNumber: 'INV-54CZS',
+  invoiceDate: '04 Nov 2024',
+  placeOfSupply: 'Assam',
+  products: [
+    {
+      id: 1,
+      productName: 'gertgerg rfreferf',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 2,
+      productName: 'INDIE MIX POHA 500GM',
+      quantity: 1,
+      unitPrice: 35.7143,
+      tax: '5%',
+      priceWithTax: 35.71
+    },
+    {
+      id: 3,
+      productName: 'Oxygen',
+      quantity: 1,
+      unitPrice: 423.7288,
+      tax: '18%',
+      priceWithTax: 423.73
+    },
+    {
+      id: 4,
+      productName: 'New backde',
+      quantity: 1,
+      unitPrice: 1000,
+      tax: null,
+      priceWithTax: 1000
+    },
+    {
+      id: 5,
+      productName: 'FESTIVE DRESS - FROCK',
+      quantity: 1,
+      unitPrice: 1000,
+      tax: null,
+      priceWithTax: 1000
+    },
+    {
+      id: 6,
+      productName: '78doleo',
+      quantity: 8,
+      unitPrice: 37.7358,
+      tax: '6%',
+      priceWithTax: 301.89
+    },
+    {
+      id: 7,
+      productName: 'BOM TEST',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 8,
+      productName: 'Barcode testing 2',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 9,
+      productName: 'Barcode test product',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 10,
+      productName: 'images 2',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 11,
+      productName: 'Redmi phone',
+      quantity: 1,
+      unitPrice: 6000,
+      tax: null,
+      priceWithTax: 6000
+    },
+    {
+      id: 12,
+      productName: 'Redmi phone',
+      quantity: 1,
+      unitPrice: 6000,
+      tax: null,
+      priceWithTax: 6000
+    },
+    {
+      id: 13,
+      productName: 'copy pr',
+      quantity: 1,
+      unitPrice: 61,
+      tax: '18%',
+      priceWithTax: 61
+    },
+    {
+      id: 14,
+      productName: 'copy batch',
+      quantity: 4,
+      unitPrice: 100,
+      tax: '18%',
+      priceWithTax: 400
+    },
+    {
+      id: 15,
+      productName: 'raw material B',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 16,
+      productName: 'Door987',
+      quantity: 1,
+      unitPrice: 0,
+      tax: null,
+      priceWithTax: 0
+    },
+    {
+      id: 17,
+      productName: 'Car987',
+      quantity: 1,
+      unitPrice: 70000,
+      tax: '18%',
+      priceWithTax: 70000
+    },
+    {
+      id: 18,
+      productName: 'Test new',
+      quantity: 1,
+      unitPrice: 593.2203,
+      tax: '18%',
+      priceWithTax: 593.22
+    },
+    {
+      id: 19,
+      productName: 'Automotive Inverter and Battery Survey',
+      quantity: 1,
+      unitPrice: 436175,
+      tax: '18%',
+      priceWithTax: 436175
+    },
+    {
+      id: 20,
+      productName: 'Mumbai Real Estate Quant Survey',
+      quantity: 1,
+      unitPrice: 150000,
+      tax: '18%',
+      priceWithTax: 150000
+    },
+    {
+      id: 21,
+      productName: 'Fleetowners_Dealers',
+      quantity: 1,
+      unitPrice: 80000,
+      tax: '18%',
+      priceWithTax: 80000
+    },
+    {
+      id: 22,
+      productName: 'Syntimental Analysis_Fashion brands',
+      quantity: 1,
+      unitPrice: 68500,
+      tax: '18%',
+      priceWithTax: 68500
+    },
+    {
+      id: 23,
+      productName: 'Aswagandha',
+      quantity: 1,
+      unitPrice: 15200,
+      tax: '18%',
+      priceWithTax: 15200
+    },
+    {
+      id: 24,
+      productName: 'sentimental analysis__Fashion brand',
+      quantity: 1,
+      unitPrice: 40500,
+      tax: '18%',
+      priceWithTax: 40500
+    },
+    {
+      id: 25,
+      productName: 'Sentimental analysis_On medicine',
+      quantity: 1,
+      unitPrice: 81000,
+      tax: '18%',
+      priceWithTax: 81000
+    },
+    {
+      id: 26,
+      productName: 'UPI_Quanitiative_Survey -Consumers',
+      quantity: 1,
+      unitPrice: 302000,
+      tax: '18%',
+      priceWithTax: 302000
+    },
+    {
+      id: 27,
+      productName: 'TVSC dealers and consumers- Consumer',
+      quantity: 1,
+      unitPrice: 1222500,
+      tax: '18%',
+      priceWithTax: 1222500
+    },
+    {
+      id: 28,
+      productName: 'Making charges',
+      quantity: 37,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 123456
+    },
+    {
+      id: 29,
+      productName: 'debit card charges',
+      quantity: null,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 12345
+    },
+    {
+      id: 30,
+      productName: 'Shipping Charges',
+      quantity: null,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 60
+    },
+    {
+      id: 31,
+      productName: 'Shipping Charges',
+      quantity: null,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 60
+    },
+    {
+      id: 32,
+      productName: 'Shipping Charges',
+      quantity: null,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 60
+    }
+  ],
+  customers: [
+    { id: null, customerName: 'Test Assam', phoneNumber: null
+    },
+    { id: null, customerName: 'Assam', phoneNumber: null
+    }
+  ],
+  totalAmount: 3061814.98,
+  amountDue: 3070343.3,
+  bankDetails: {
+    bank: 'Example Bank',
+    accountNumber: '1234567890',
+    ifscCode: 'IFSC0001234',
+    branch: 'Main Branch',
+    beneficiaryName: 'Vishnu'
+  },
+  extractionNotes: {
+    customerIds: 'Customer IDs are not explicitly mentioned in the invoice.',
+    productIds: 'Product IDs are inferred from the serial number in the invoice.',
+    phoneNumbers: 'Phone numbers are missing from the invoice.'
+  }
+}

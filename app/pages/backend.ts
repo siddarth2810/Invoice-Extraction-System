@@ -1,6 +1,9 @@
 'use server'
 // app/actions/backend.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
+//import fs from "fs";
+//import path from "path";
+
 
 //customerId, productId and unit price
 interface Invoice {
@@ -107,8 +110,13 @@ export async function generateContent(formData: FormData) {
 		console.log("Parsed Extracted Data:", extractedData);
 
 		// Process and validate the extracted data
+
+		// Read and parse the JSON file
+		//const filePath = path.join(process.cwd(), 'public', 'test.json');
+		//const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 		const processedData = processExtractedData(extractedData);
 
+		console.log(processedData)
 		return processedData;
 
 	} catch (error) {
@@ -125,23 +133,23 @@ function processExtractedData(data: any): ExtractedData {
 	};
 
 	// Process invoices
-	if (data.invoices && Array.isArray(data.invoices)) {
-		processedData.invoices = data.invoices.map((invoice: any) => ({
-			id: invoice.id?.toString() || crypto.randomUUID(),
-			serialNumber: invoice.serialNumber || invoice.id?.toString(),
-			date: invoice.date || '',
-			totalAmount: Number(invoice.totalAmount) || 0
-		}));
-	}
+	processedData.invoices = [
+		{
+			id: crypto.randomUUID(),
+			serialNumber: data.invoiceNumber || 'Unknown Invoice',
+			date: data.invoiceDate || '',
+			totalAmount: Number(data.totalAmount) || 0 // Remove commas and convert to number
+		}
+	];
 
 	// Process products
 	if (data.products && Array.isArray(data.products)) {
 		processedData.products = data.products.map((product: any) => ({
 			id: product.id?.toString() || crypto.randomUUID(),
-			productName: product.name || 'Unknown Product',
+			productName: product.productName || 'Unknown Product',
 			quantity: Number(product.quantity) || 0,
 			unitPrice: Number(product.unitPrice) || 0,
-			tax: Number(product.tax) || 0,
+			tax: product.tax ? parseFloat(product.tax.replace('%', '')) : 0, // Convert tax to number
 			priceWithTax: Number(product.priceWithTax) || 0
 		}));
 	}
@@ -150,17 +158,16 @@ function processExtractedData(data: any): ExtractedData {
 	if (data.customers && Array.isArray(data.customers)) {
 		processedData.customers = data.customers.map((customer: any) => ({
 			id: customer.id?.toString() || crypto.randomUUID(),
-			customerName: customer.name || 'Unknown Customer',
+			customerName: customer.customerName || 'Unknown Customer',
 			phoneNumber: customer.phoneNumber || '',
 			totalPurchaseAmount: 0
 		}));
 	}
 
 	// Create finalData
-
 	processedData.finalData = processedData.products.map((product, index) => ({
 		id: index + 1, // Use index-based ID
-		invoiceId: processedData.invoices[0]?.id || null,
+		invoiceId: processedData.invoices[0]?.serialNumber || null,
 		customerName: processedData.customers[0]?.customerName || null,
 		productName: product.productName,
 		quantity: product.quantity,
@@ -172,6 +179,7 @@ function processExtractedData(data: any): ExtractedData {
 
 	return processedData;
 }
+
 // Example usage
 async function extractPdfOrImageContent(file: File): Promise<string> {
 	const arrayBuffer = await file.arrayBuffer();
