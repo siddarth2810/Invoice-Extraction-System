@@ -1,0 +1,47 @@
+{
+  "invoiceNumber": "INV-54CZS",
+  "invoiceDate": "04 Nov 2024",
+  "products": [
+    {
+      "id": 1,
+      "productName": "gertgerg rfreferf",
+      "quantity": 1.000,
+      "unitPrice": 0.00,
+      "tax": null,
+      "priceWithTax": 0.00
+    },
+    {
+      "id": 2,
+      "productName": "INDIE MIX POHA 500GM",
+      "quantity": 1.000,
+      "unitPrice": 35.7143,
+      "tax": 5,
+      "priceWithTax": 35.71
+    },
+    {
+      "id": 32,
+      "productName": "Shipping Charges",
+      "quantity": null,
+      "unitPrice": null,
+      "tax": null,
+      "priceWithTax": 60.00
+    }
+  ],
+  "customers": [
+    {
+      "id": null,
+      "customerName": "Test Assam",
+      "phoneNumber": null
+    },
+    {
+      "id": null,
+      "customerName": "Assam",
+      "phoneNumber": null
+    }
+  ],
+  "totalAmount": 3061814.98,
+  "totalTax": 444123.53,
+  "extractionNotes": {
+    "customerInformation": "Incomplete customer information.  Phone numbers are missing.  Multiple customer entries could indicate a consignee vs. buyer distinction.  Additional clarifying information would be needed to confidently separate them."
+  }
+}

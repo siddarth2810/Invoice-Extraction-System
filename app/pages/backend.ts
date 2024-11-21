@@ -1,123 +1,201 @@
 'use server'
 // app/actions/backend.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GoogleAIFileManager } from "@google/generative-ai/server";
-import path from "path";
+//import fs from "fs";
+//import path from "path";
 
+
+//customerId, productId and unit price
+interface Invoice {
+	id: string,
+	serialNumber: string;
+	date: string;
+	totalAmount: number;
+}
+interface Product {
+	id: string;
+	productName: string;
+	quantity: number;
+	unitPrice: number;
+	tax: number;
+	priceWithTax: number;
+};
+interface Customer {
+	id: string;
+	customerName: string;
+	phoneNumber: string;
+	totalPurchaseAmount: number;
+};
+
+interface FinalDataItem {
+	id: number;
+	invoiceId: string | null;
+	customerName: string | null;
+	productName: string;
+	quantity: number;
+	unitPrice: number;
+	tax: number;
+	priceWithTax: number;
+	date: string | null;
+}
 interface ExtractedData {
-	products: Array<{
-		id: string;
-		name: string;
-		quantity: number;
-		unitPrice: number;
-		tax: number;
-		priceWithTax: number;
-	}>;
-	customers: Array<{
-		id: string;
-		name: string;
-		phoneNumber: string;
-		totalPurchaseAmount: number;
-	}>;
-	invoices: Array<{
-		serialNumber: string;
-		customerName: string;
-		productName: string;
-		quantity: number;
-		tax: number;
-		totalAmount: number;
-		date: string;
-	}>;
+	invoices: Invoice[];
+	products: Product[];
+	customers: Customer[];
+	finalData: FinalDataItem[]
 }
 
-export async function generateContent(): Promise<ExtractedData> {
+
+export async function generateContent(formData: FormData) {
 	try {
-		// Get the correct path to the PDF file
-		const pdfPath = path.join(process.cwd(), 'public', 'simple.pdf');
+		const file = formData.get('file') as File;
+
+		if (!file || !(file instanceof File)) {
+			throw new Error('No file uploaded');
+		}
+
+		const extractedText: string = await extractPdfOrImageContent(file);
+
 		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
-		const fileManager = new GoogleAIFileManager(process.env.API_KEY as string);
+		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
+		const prompt = `
 
-		const uploadResponse = await fileManager.uploadFile(pdfPath, {
-			mimeType: "application/pdf",
-			displayName: "simple.pdf",
-		});
+      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
+        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
+         customers : (id, customer name ,  phoneNumber),  
 
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+	Instructions:
+      1. Map all extracted information to the appropriate fields in the structure above.
+      2. If a field is missing or cannot be accurately determined, use null for that field.
+      3. If there are multiple products or customers, include them all in their respective arrays.
+      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
+      5. Tax is usually found in percentage at the bottom of the invoice pdf or images
+      Provide the most accurate and complete JSON possible based on the extracted information.
+
+`;
+
 		const result = await model.generateContent([
 			{
-				fileData: {
-					mimeType: uploadResponse.file.mimeType,
-					fileUri: uploadResponse.file.uri,
-				},
+				inlineData: {
+					mimeType: "application/pdf",
+					data: extractedText
+				}
 			},
-			{ text: "Extract and organize the following information from this document into JSON format with these sections: products (containing name, quantity, unit price, tax, price with tax), customers (containing name, phone number, total purchase amount), and invoices (containing serial number, customer details, product details, tax, total amount, date). Format the response as valid JSON." },
+			{ text: prompt }
 		]);
 
 		const responseText = result.response.text();
-		const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
+		console.log("Raw AI Response:", responseText);
 
-		// Add more robust parsing
-		const extractedData = JSON.parse(cleanedText);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let extractedData: any;
 
-		// Validate and sanitize data
-		const sanitizedData: ExtractedData = {
-			products: Array.isArray(extractedData.products)
-				? extractedData.products.map((product: {
-					id?: string,
-					name?: string,
-					quantity?: number,
-					unitPrice?: number,
-					tax?: number,
-					priceWithTax?: number
-				}) => ({
-					id: product.id || crypto.randomUUID().toString().substring(0, 10),
-					name: product.name || 'Unknown',
-					quantity: product.quantity || 0,
-					unitPrice: product.unitPrice || 0,
-					tax: product.tax || 0,
-					priceWithTax: product.priceWithTax || 0
-				}))
-				: [],
-			customers: Array.isArray(extractedData.customers)
-				? extractedData.customers.map((customer: {
-					id?: string,
-					name?: string,
-					phoneNumber?: string,
-					totalPurchaseAmount?: number
-				}) => ({
-					id: customer.id || crypto.randomUUID().toString().substring(0, 10),
-					name: customer.name || 'Unknown',
-					phoneNumber: customer.phoneNumber || '',
-					totalPurchaseAmount: typeof customer.totalPurchaseAmount === 'number'
-						? customer.totalPurchaseAmount
-						: 0
-				}))
-				: [],
-			invoices: Array.isArray(extractedData.invoices)
-				? extractedData.invoices.map((invoice: {
-					serialNumber?: string,
-					customerName?: string,
-					productName?: string,
-					quantity?: number,
-					tax?: number,
-					totalAmount?: number,
-					date?: string
-				}) => ({
-					serialNumber: invoice.serialNumber || 'Unknown',
-					customerName: invoice.customerName || 'Unknown',
-					productName: invoice.productName || 'Unknown',
-					quantity: invoice.quantity || 0,
-					tax: invoice.tax || 0,
-					totalAmount: invoice.totalAmount || 0,
-					date: invoice.date || 'Unknown',
-				}))
-				: []
-		};
+		try {
+			const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
+			extractedData = JSON.parse(cleanedText);
+		} catch (error) {
+			console.error("Error parsing cleaned AI response:", error);
+			const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+			if (jsonMatch) {
+				try {
+					extractedData = JSON.parse(jsonMatch[0]);
+				} catch (innerError) {
+					console.error("Error parsing extracted JSON:", innerError);
+					throw new Error("Failed to extract valid JSON from AI response");
+				}
+			} else {
+				throw new Error("No valid JSON structure found in AI response");
+			}
+		}
 
+		console.log("Parsed Extracted Data:", extractedData);
 
-		return sanitizedData;
+		// Process and validate the extracted data
+
+		// Read and parse the JSON file
+		//	const filePath = path.join(process.cwd(), 'public', 'test.json');
+		//	const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+		const processedData = processExtractedData(extractedData);
+
+		console.log(processedData)
+		return processedData;
+
 	} catch (error) {
 		console.error("Error in generateContent:", error);
 		throw new Error(error instanceof Error ? error.message : 'Failed to generate content');
 	}
+}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function processExtractedData(data: any): ExtractedData {
+	const processedData: ExtractedData = {
+		invoices: [],
+		products: [],
+		customers: [],
+		finalData: []
+	};
+
+	// Process invoices
+	if (data.invoices && Array.isArray(data.invoices)) {
+		processedData.invoices = data.invoices.map((invoice: any) => ({
+			id: invoice.id?.toString() || crypto.randomUUID(),
+			serialNumber: invoice.serialNumber || 'Unknown Invoice',
+			date: invoice.date || '',
+			totalAmount: Number(invoice.totalAmount) || 0
+		}));
+	} else if (data.invoiceNumber) {
+		// Fallback for the case when invoice data is not in an array
+		processedData.invoices = [{
+			id: crypto.randomUUID(),
+			serialNumber: data.invoiceNumber || 'Unknown Invoice',
+			date: data.invoiceDate || '',
+			totalAmount: Number(data.totalAmount) || 0
+
+
+		}];
+
+	}
+
+	// Process products
+	if (data.products && Array.isArray(data.products)) {
+		processedData.products = data.products.map((product: any) => ({
+			id: product.id?.toString() || crypto.randomUUID(),
+			productName: product.productName || 'Unknown Product',
+			quantity: Number(product.quantity) || 0,
+			unitPrice: Number(product.unitPrice) || 0,
+			tax: product.tax ? parseFloat(product.tax.toString().replace('%', '')) : 0,
+			priceWithTax: Number(product.priceWithTax) || 0
+		}));
+	}
+
+	// Process customers
+	if (data.customers && Array.isArray(data.customers)) {
+		processedData.customers = data.customers.map((customer: any) => ({
+			id: customer.id?.toString() || crypto.randomUUID(),
+			customerName: customer.customerName || 'Unknown Customer',
+			phoneNumber: customer.phoneNumber || '',
+			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || 0
+		}));
+	}
+
+	// Create finalData
+	processedData.finalData = processedData.products.map((product, index) => ({
+		id: index + 1,
+		invoiceId: processedData.invoices[0]?.serialNumber || null,
+		customerName: processedData.customers[0]?.customerName || null,
+		productName: product.productName,
+		quantity: product.quantity,
+		unitPrice: product.unitPrice,
+		tax: product.tax,
+		priceWithTax: product.priceWithTax,
+		date: processedData.invoices[0]?.date || null
+	}));
+
+	return processedData;
+}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Example usage
+async function extractPdfOrImageContent(file: File): Promise<string> {
+	const arrayBuffer = await file.arrayBuffer();
+	const base64File = Buffer.from(arrayBuffer).toString('base64');
+	return base64File;
 }
