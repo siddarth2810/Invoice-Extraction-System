@@ -1,0 +1,37 @@
+{
+
+  products: [
+    {
+      "id": 1,
+      "name": "gertgerg rfreferf",
+      "quantity": 1.000,
+      "unitPrice": 0.00,
+      "tax": null,
+      "priceWithTax": 0.00
+    },
+    {
+      id: 32,
+      name: 'Shipping Charges',
+      quantity: null,
+      unitPrice: null,
+      tax: null,
+      priceWithTax: 60
+    }
+  ],
+  customers: [
+    { id: null, name: 'Test Assam', phoneNumber: null
+    },
+    { id: null, name: 'Assam', phoneNumber: null
+    }
+  ],
+  invoices: [
+    {
+      id: 'INV-54CZS',
+      tax: [Array
+      ],
+      totalAmount: 3061814.98,
+      date: '04 Nov 2024'
+    }
+]
+}
+
