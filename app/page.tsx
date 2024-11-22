@@ -2,49 +2,45 @@
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './redux/store';
-import { setData } from './redux/slices/dataSlice';
+import { setInitialData } from './redux/slices/dataSlice'; // Updated import
 import { generateContent } from './pages/backend';
 import { setActiveTab, TabType } from './redux/slices/tabSlice';
 import { useState } from 'react';
+import ProductsTable from "@/components/Tables/ProductsTable";
+import CustomersTable from "@/components/Tables/CustomersTable";
+import InvoicesTable from "@/components/Tables/InvoicesTable";
 
-
-//ui 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Check, Upload } from 'lucide-react'
-
+// UI Components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Check, Upload } from 'lucide-react';
 
 export default function Home() {
-
   const dispatch = useDispatch();
   const customers = useSelector((state: RootState) => state.data.customers);
   const products = useSelector((state: RootState) => state.data.products);
   const invoices = useSelector((state: RootState) => state.data.invoices);
-  const finalData = useSelector((state: RootState) => state.data.finalData);
   const activeTab = useSelector((state: RootState) => state.tab.activeTab);
   const [file, setFile] = useState<File | null>(null);
-
-
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     setFile(selectedFile || null);
   };
 
-
   const handleGenerate = async () => {
     if (!file) {
       alert('Please upload a PDF first');
       return;
     }
-
     try {
       const formData = new FormData();
       formData.append('file', file);
       const extractedData = await generateContent(formData);
-      dispatch(setData(extractedData));
+
+      dispatch(setInitialData(extractedData));
     } catch (error) {
       console.error('Failed to generate content', error);
     }
@@ -93,16 +89,14 @@ export default function Home() {
         <Tabs
           defaultValue={activeTab}
           onValueChange={(value) => {
-            if (['invoices', 'products', 'customers'].includes(value)) {
+            if (['customers', 'products', 'invoices'].includes(value)) {
               dispatch(setActiveTab(value as TabType));
             }
           }}
           className="w-full"
         >
-
-          {/* Tab Navigation */}
           <TabsList className="w-full bg-[#fffaf3] p-0 mb-4">
-            {(['customers', 'products', 'invoices', 'finalData'] as const).map((tab) => (
+            {(['customers', 'products', 'invoices'] as const).map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
@@ -113,153 +107,17 @@ export default function Home() {
             ))}
           </TabsList>
           <TabsContent value="invoices">
-            {invoices.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serial Number</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {invoices.map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.serialNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">{invoice.totalAmount}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No invoice data available</p>
-            )}
+            <InvoicesTable invoices={invoices} />
           </TabsContent>
-
-          {/* Customers Table */}
-          <TabsContent value="customers">
-            {customers.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchase Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {customers.map((customer) => (
-                      <tr
-                        key={customer.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">{customer.customerName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{customer.phoneNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {customer.totalPurchaseAmount.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No customer data available</p>
-            )}
-          </TabsContent>
-
-          {/* Products Table */}
           <TabsContent value="products">
-            {products.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {products.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">{product.productName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.tax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.priceWithTax.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No product data available</p>
-            )}
+            <ProductsTable products={products} />
           </TabsContent>
-
-          {/* Products Table */}
-          <TabsContent value="finalData">
-            {finalData.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">invoice id</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">customer name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">product name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">quantity</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {finalData.map((FinalDataItem) => (
-                      <tr key={FinalDataItem.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.invoiceId}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.customerName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.productName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.tax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.priceWithTax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No product data available</p>
-            )}
+          <TabsContent value="customers">
+            <CustomersTable customers={customers} />
           </TabsContent>
         </Tabs>
       </div>
-
-
-    </div >
+    </div>
   );
 }
+
