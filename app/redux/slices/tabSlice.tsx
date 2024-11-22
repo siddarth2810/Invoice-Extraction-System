@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type TabType = 'invoices' | 'products' | 'customers' | 'finalData';
+export type TabType = 'invoices' | 'products' | 'customers';
 
 export interface TabState {
   activeTab: TabType;

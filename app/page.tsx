@@ -1,265 +1,138 @@
-'use client';
+'use client'
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from './redux/store';
-import { setData } from './redux/slices/dataSlice';
-import { generateContent } from './pages/backend';
-import { setActiveTab, TabType } from './redux/slices/tabSlice';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from './redux/store'
+import { setInitialData } from './redux/slices/dataSlice'
+import { generateContent } from './pages/backend'
+import { setActiveTab, TabType } from './redux/slices/tabSlice'
+import { useState } from 'react'
+import ProductsTable from "@/components/Tables/ProductsTable"
+import CustomersTable from "@/components/Tables/CustomersTable"
+import InvoicesTable from "@/components/Tables/InvoicesTable"
+import { Loader2 } from 'lucide-react'
 
-
-//ui 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check, Upload } from 'lucide-react'
 
-
 export default function Home() {
-
-  const dispatch = useDispatch();
-  const customers = useSelector((state: RootState) => state.data.customers);
-  const products = useSelector((state: RootState) => state.data.products);
-  const invoices = useSelector((state: RootState) => state.data.invoices);
-  const finalData = useSelector((state: RootState) => state.data.finalData);
-  const activeTab = useSelector((state: RootState) => state.tab.activeTab);
-  const [file, setFile] = useState<File | null>(null);
-
-
+  const dispatch = useDispatch()
+  const customers = useSelector((state: RootState) => state.data.customers)
+  const products = useSelector((state: RootState) => state.data.products)
+  const invoices = useSelector((state: RootState) => state.data.invoices)
+  const activeTab = useSelector((state: RootState) => state.tab.activeTab)
+  const [file, setFile] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    setFile(selectedFile || null);
-  };
-
+    const selectedFile = e.target.files?.[0]
+    setFile(selectedFile || null)
+  }
 
   const handleGenerate = async () => {
     if (!file) {
-      alert('Please upload a PDF first');
-      return;
+      alert('Please upload a PDF first')
+      return
     }
-
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const extractedData = await generateContent(formData);
-      dispatch(setData(extractedData));
+      setIsLoading(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      const extractedData = await generateContent(formData)
+      dispatch(setInitialData(extractedData))
     } catch (error) {
-      console.error('Failed to generate content', error);
+      console.error('Failed to generate content', error)
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#faf4ed] text-[#575279] p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-[#907aa9]">Invoice Data Extraction System</h1>
-        <Card className="mb-8 bg-[#fffaf3] border-none shadow-sm">
-          <CardContent className="pt-6">
-            <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white text-[#575279] p-8">
+      <div className="px-28 py-6">
+        <h1 className="text-4xl font-bold mb-8 text-[#907aa9] tracking-tight">
+          Invoice Data Extraction System
+        </h1>
+
+        <Card className="mb-8 bg-white/50 backdrop-blur border-none shadow-sm">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <div className="relative">
                 <Input
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.xlsx,.xls"
                   onChange={handleFileChange}
                   className="sr-only"
                   id="file-upload"
                 />
                 <label
                   htmlFor="file-upload"
-                  className="cursor-pointer inline-flex items-center rounded-md bg-[#dfdad9] px-4 py-2 text-sm font-medium text-[#575279] hover:bg-[#f2e9e1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#907aa9]"
+                  className="cursor-pointer inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-[#575279] hover:bg-gray-50 border border-gray-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#907aa9]"
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   Upload File
                 </label>
               </div>
               {file && (
-                <div className="flex items-center text-[#d7827e]">
+                <div className="flex items-center text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
                   <Check className="mr-2 h-4 w-4" />
-                  <span className="text-sm">{file.name} uploaded</span>
+                  <span className="text-sm font-medium">{file.name} uploaded</span>
                 </div>
               )}
+              <Button
+                onClick={handleGenerate}
+                disabled={!file || isLoading}
+                className="ml-auto bg-[#907aa9] hover:bg-[#7b668f] text-white shadow-sm transition-all disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Generate Data'
+                )}
+              </Button>
             </div>
-            <Button
-              onClick={handleGenerate}
-              disabled={!file}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              Generate Data
-            </Button>
           </CardContent>
         </Card>
 
         <Tabs
           defaultValue={activeTab}
           onValueChange={(value) => {
-            if (['invoices', 'products', 'customers'].includes(value)) {
-              dispatch(setActiveTab(value as TabType));
+            if (['customers', 'products', 'invoices'].includes(value)) {
+              dispatch(setActiveTab(value as TabType))
             }
           }}
           className="w-full"
         >
-
-          {/* Tab Navigation */}
-          <TabsList className="w-full bg-[#fffaf3] p-0 mb-4">
-            {(['customers', 'products', 'invoices', 'finalData'] as const).map((tab) => (
+          <TabsList className="w-full bg-white/50 backdrop-blur p-1 rounded-lg mb-4">
+            {(['customers', 'products', 'invoices'] as const).map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className={`flex-1 py-2.5 data-[state=active]:bg-[#faf4ed] data-[state=active]:text-[#907aa9] rounded-none border-b-2 border-transparent data-[state=active]:border-[#907aa9]`}
+                className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#907aa9] rounded-md transition-all data-[state=active]:shadow-sm"
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value="invoices">
-            {invoices.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serial Number</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {invoices.map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.serialNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">{invoice.totalAmount}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{invoice.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No invoice data available</p>
-            )}
-          </TabsContent>
 
-          {/* Customers Table */}
-          <TabsContent value="customers">
-            {customers.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchase Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {customers.map((customer) => (
-                      <tr
-                        key={customer.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">{customer.customerName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{customer.phoneNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {customer.totalPurchaseAmount.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No customer data available</p>
-            )}
-          </TabsContent>
-
-          {/* Products Table */}
-          <TabsContent value="products">
-            {products.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {products.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">{product.productName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.tax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {product.priceWithTax.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No product data available</p>
-            )}
-          </TabsContent>
-
-          {/* Products Table */}
-          <TabsContent value="finalData">
-            {finalData.length > 0 ? (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">invoice id</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">customer name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">product name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">quantity</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {finalData.map((FinalDataItem) => (
-                      <tr key={FinalDataItem.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.invoiceId}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.customerName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.productName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.tax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          {FinalDataItem.priceWithTax.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{FinalDataItem.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">No product data available</p>
-            )}
-          </TabsContent>
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <TabsContent value="invoices">
+              <InvoicesTable invoices={invoices} />
+            </TabsContent>
+            <TabsContent value="products">
+              <ProductsTable products={products} />
+            </TabsContent>
+            <TabsContent value="customers">
+              <CustomersTable customers={customers} />
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
-
-
-    </div >
-  );
+    </div>
+  )
 }

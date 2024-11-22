@@ -1,0 +1,349 @@
+{
+  "valid_data": [
+    {
+      "row_number": 1,
+      "data": {
+        "Serial Number": "Serial Number",
+        "Invoice Date": "Invoice Date",
+        "Item Total Amount": "Item Total Amount",
+        "Product Name": "Product Name",
+        "Qty": "Qty",
+        "Price with Tax": "Price with Tax",
+        "Unit": "Unit",
+        "Tax (%)": "Tax (%)",
+        "Party Name": "Party Name",
+        "Phone Number": "Phone Number",
+        "Party Company Name": "Party Company Name",
+        "Status": "Status"
+      }
+    },
+    {
+      "row_number": 2,
+      "data": {
+        "Serial Number": "RAY/23-24/286",
+        "Invoice Date": "12 Nov 2024",
+        "Item Total Amount": "69183.35",
+        "Product Name": "iPHONE 16",
+        "Qty": "1.000",
+        "Price with Tax": "79990.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "Shounak",
+        "Phone Number": 999999999,
+        "Party Company Name": "NextSpeed Technologies Pvt Ltd",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 3,
+      "data": {
+        "Serial Number": "RAY/23-24/286",
+        "Invoice Date": "12 Nov 2024",
+        "Item Total Amount": "3977.68",
+        "Product Name": "iPHONE 16 Cover",
+        "Qty": "1.000",
+        "Price with Tax": "4599.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "Shounak",
+        "Phone Number": 999999999,
+        "Party Company Name": "NextSpeed Technologies Pvt Ltd",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 4,
+      "data": {
+        "Serial Number": "RAY/23-24/286",
+        "Invoice Date": "12 Nov 2024",
+        "Item Total Amount": "21621.64",
+        "Product Name": "Beats PRO X",
+        "Qty": "1.000",
+        "Price with Tax": "24999.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "Shounak",
+        "Phone Number": 999999999,
+        "Party Company Name": "NextSpeed Technologies Pvt Ltd",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 5,
+      "data": {
+        "Serial Number": "RAY/23-24/285",
+        "Invoice Date": "12 Nov 2024",
+        "Item Total Amount": "10000.00",
+        "Product Name": "SPEAKER",
+        "Qty": "1.000",
+        "Price with Tax": "10000.00",
+        "Unit": "OTH",
+        "Tax (%)": 0,
+        "Party Name": "Abhinav",
+        "Phone Number": 888888888,
+        "Party Company Name": "GAME STATION",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 6,
+      "data": {
+        "Serial Number": "RAY/23-24/284",
+        "Invoice Date": "08 Nov 2024",
+        "Item Total Amount": "88.98",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "1.000",
+        "Price with Tax": "88.98",
+        "Unit": "SQF",
+        "Tax (%)": 0,
+        "Party Name": "Ramesh",
+        "Phone Number": 777777777,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 7,
+      "data": {
+        "Serial Number": "RAY/23-24/283",
+        "Invoice Date": "08 Nov 2024",
+        "Item Total Amount": "88.98",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "1.000",
+        "Price with Tax": "88.98",
+        "Unit": "SQF",
+        "Tax (%)": 0,
+        "Party Name": "Ramesh",
+        "Phone Number": 777777777,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 8,
+      "data": {
+        "Serial Number": "RAY/23-24/282",
+        "Invoice Date": "07 Nov 2024",
+        "Item Total Amount": "37.08",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "500.000",
+        "Price with Tax": "0.07",
+        "Unit": "SQF",
+        "Tax (%)": 0,
+        "Party Name": "RAM",
+        "Phone Number": 999999999,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 9,
+      "data": {
+        "Serial Number": "RAY/23-24/281",
+        "Invoice Date": "07 Nov 2024",
+        "Item Total Amount": "88.98",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "1.000",
+        "Price with Tax": "88.98",
+        "Unit": "SQF",
+        "Tax (%)": 0,
+        "Party Name": "RAM",
+        "Phone Number": 999999999,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 10,
+      "data": {
+        "Serial Number": "RAY/23-24/280",
+        "Invoice Date": "06 Nov 2024",
+        "Item Total Amount": "105.00",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "1.000",
+        "Price with Tax": "105.00",
+        "Unit": "SQF",
+        "Tax (%)": 18,
+        "Party Name": "Ramesh",
+        "Phone Number": 777777777,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 11,
+      "data": {
+        "Serial Number": "RAY/23-24/280",
+        "Invoice Date": "06 Nov 2024",
+        "Item Total Amount": "0.00",
+        "Product Name": "plain glass",
+        "Qty": "1.000",
+        "Price with Tax": "0.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "Ramesh",
+        "Phone Number": 777777777,
+        "Party Company Name": "Apple India",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 12,
+      "data": {
+        "Serial Number": "RAY/23-24/279",
+        "Invoice Date": "05 Nov 2024",
+        "Item Total Amount": "20.00",
+        "Product Name": "Ct Sheet",
+        "Qty": "3.000",
+        "Price with Tax": "500.00",
+        "Unit": "OTH",
+        "Tax (%)": 0,
+        "Party Name": "Abhinav",
+        "Phone Number": 888888888,
+        "Party Company Name": "GAME STATION",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 13,
+      "data": {
+        "Serial Number": "RAY/23-24/278",
+        "Invoice Date": "05 Nov 2024",
+        "Item Total Amount": "105.00",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "1.000",
+        "Price with Tax": "105.00",
+        "Unit": "SQF",
+        "Tax (%)": 18,
+        "Party Name": "Decathlon",
+        "Phone Number": 555555555,
+        "Party Company Name": "DECATHLON SPORTS INDIA PRIVATE LIMITED",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 14,
+      "data": {
+        "Serial Number": "RAY/23-24/277",
+        "Invoice Date": "02 Nov 2024",
+        "Item Total Amount": "20475.00",
+        "Product Name": "12 MM PLAIN GLASS",
+        "Qty": "15.000",
+        "Price with Tax": "11.50",
+        "Unit": "SQF",
+        "Tax (%)": 18,
+        "Party Name": "Abhinav",
+        "Phone Number": 888888888,
+        "Party Company Name": "GAME STATION",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 15,
+      "data": {
+        "Serial Number": "RAY/23-24/276",
+        "Invoice Date": "01 Nov 2024",
+        "Item Total Amount": "708.00",
+        "Product Name": "plain glass",
+        "Qty": "1.000",
+        "Price with Tax": "708.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "geeetha",
+        "Phone Number": 666666666,
+        "Party Company Name": "Flipkart Co",
+        "Status": "pending"
+      }
+    },
+    {
+      "row_number": 16,
+      "data": {
+        "Serial Number": "RAY/23-24/275",
+        "Invoice Date": "01 Nov 2024",
+        "Item Total Amount": "55000.00",
+        "Product Name": "plain glass",
+        "Qty": "100.000",
+        "Price with Tax": "590.00",
+        "Unit": "OTH",
+        "Tax (%)": 18,
+        "Party Name": "geeetha",
+        "Phone Number": 666666666,
+        "Party Company Name": "Flipkart Co",
+        "Status": "paid"
+      }
+    },
+    {
+      "row_number": 18,
+      "data": {
+        "Serial Number": "Totals",
+        "Item Total Amount": 181499.69,
+        "Qty": 629
+      }
+    }
+  ],
+  "summary_data": [
+    {
+      "row_number": 20,
+      "data": [
+        "CGST",
+        "11,486.11"
+      ]
+    },
+    {
+      "row_number": 21,
+      "data": [
+        "SGST",
+        "11,486.11"
+      ]
+    },
+    {
+      "row_number": 22,
+      "data": [
+        "IGST",
+        "3,139.33"
+      ]
+    },
+    {
+      "row_number": 23,
+      "data": [
+        "ITEM NET AMOUNT",
+        "155,388.13"
+      ]
+    },
+    {
+      "row_number": 24,
+      "data": [
+        "ITEM TOTAL AMOUNT",
+        "181,499.69"
+      ]
+    },
+    {
+      "row_number": 25,
+      "data": [
+        "QTY",
+        "629.0"
+      ]
+    },
+    {
+      "row_number": 26,
+      "data": [
+        "EXTRA DISCOUNT",
+        "0.0"
+      ]
+    },
+    {
+      "row_number": 27,
+      "data": [
+        "ROUND OFF AMOUNT",
+        "0.019999999999999997"
+      ]
+    },
+    {
+      "row_number": 28,
+      "data": [
+        "CESS",
+        "0.0"
+      ]
+    }
+  ]
+}

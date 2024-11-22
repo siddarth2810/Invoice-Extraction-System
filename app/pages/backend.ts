@@ -7,11 +7,16 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 //customerId, productId and unit price
 interface Invoice {
-	id: string,
+	id: string;
 	serialNumber: string;
+	customerName: string;
+	productName: string;
+	quantity: number;
+	priceWithTax: number;
 	date: string;
-	totalAmount: number;
+	bankDetails: string;
 }
+
 interface Product {
 	id: string;
 	productName: string;
@@ -19,32 +24,21 @@ interface Product {
 	unitPrice: number;
 	tax: number;
 	priceWithTax: number;
-};
+}
+
 interface Customer {
 	id: string;
 	customerName: string;
 	phoneNumber: string;
+	address: string;
 	totalPurchaseAmount: number;
-};
-
-interface FinalDataItem {
-	id: number;
-	invoiceId: string | null;
-	customerName: string | null;
-	productName: string;
-	quantity: number;
-	unitPrice: number;
-	tax: number;
-	priceWithTax: number;
-	date: string | null;
 }
+
 interface ExtractedData {
 	invoices: Invoice[];
 	products: Product[];
 	customers: Customer[];
-	finalData: FinalDataItem[]
 }
-
 
 export async function generateContent(formData: FormData) {
 	try {
@@ -59,20 +53,20 @@ export async function generateContent(formData: FormData) {
 		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
 		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
 		const prompt = `
-
-      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
-        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
-         customers : (id, customer name ,  phoneNumber),  
-
-	Instructions:
-      1. Map all extracted information to the appropriate fields in the structure above.
-      2. If a field is missing or cannot be accurately determined, use null for that field.
-      3. If there are multiple products or customers, include them all in their respective arrays.
-      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
-      5. Tax is usually found in percentage at the bottom of the invoice pdf or images
-      Provide the most accurate and complete JSON possible based on the extracted information.
-
-`;
+						      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
+						        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
+						        customers : (id, customer name, phoneNumber, address),  
+						        invoices: (serial number, total amount, date, bank details)
+						
+							Instructions:
+						      1. Map all extracted information to the appropriate fields in the structure above.
+						      2. If a field is missing or cannot be accurately determined, use null for that field.
+						      3. If there are multiple products or customers, include them all in their respective arrays.
+						      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
+						      5. Tax is usually found in percentage at the bottom of the invoice pdf or images, serial Number is invoice number if specially not found
+						      Provide the most accurate and complete JSON possible based on the extracted information.
+						
+						`;
 
 		const result = await model.generateContent([
 			{
@@ -113,7 +107,7 @@ export async function generateContent(formData: FormData) {
 		// Process and validate the extracted data
 
 		// Read and parse the JSON file
-		//	const filePath = path.join(process.cwd(), 'public', 'test.json');
+		//	const filePath = path.join(process.cwd(), 'public', 'final.json');
 		//	const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 		const processedData = processExtractedData(extractedData);
 
@@ -127,38 +121,28 @@ export async function generateContent(formData: FormData) {
 }
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function processExtractedData(data: any): ExtractedData {
+	// Initialize processed data structure
 	const processedData: ExtractedData = {
 		invoices: [],
 		products: [],
-		customers: [],
-		finalData: []
+		customers: []
 	};
 
-	// Process invoices
-	if (data.invoices && Array.isArray(data.invoices)) {
-		processedData.invoices = data.invoices.map((invoice: any) => ({
-			id: invoice.id?.toString() || crypto.randomUUID(),
-			serialNumber: invoice.serialNumber || 'Unknown Invoice',
-			date: invoice.date || '',
-			totalAmount: Number(invoice.totalAmount) || 0
+	// Process customers
+	if (Array.isArray(data.customers)) {
+		processedData.customers = data.customers.map((customer: any) => ({
+			id: customer.id?.toString() || crypto.randomUUID(),
+			customerName: customer.customerName || 'Unknown Customer',
+			phoneNumber: customer.phoneNumber || '',
+			address: customer.address || '-',
+			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || Number(data.invoices?.[0]?.totalAmount) || 0
 		}));
-	} else if (data.invoiceNumber) {
-		// Fallback for the case when invoice data is not in an array
-		processedData.invoices = [{
-			id: crypto.randomUUID(),
-			serialNumber: data.invoiceNumber || 'Unknown Invoice',
-			date: data.invoiceDate || '',
-			totalAmount: Number(data.totalAmount) || 0
-
-
-		}];
-
 	}
 
 	// Process products
-	if (data.products && Array.isArray(data.products)) {
+	if (Array.isArray(data.products)) {
 		processedData.products = data.products.map((product: any) => ({
-			id: product.id?.toString() || crypto.randomUUID(),
+			id: crypto.randomUUID(),
 			productName: product.productName || 'Unknown Product',
 			quantity: Number(product.quantity) || 0,
 			unitPrice: Number(product.unitPrice) || 0,
@@ -166,28 +150,25 @@ function processExtractedData(data: any): ExtractedData {
 			priceWithTax: Number(product.priceWithTax) || 0
 		}));
 	}
+	const formatBankDetails = (bankDetails: any): string => {
+		if (!bankDetails || typeof bankDetails !== 'object') return 'N/A';
+		return Object.entries(bankDetails)
+			.map(([key, value]) => `${key}: ${value || 'Unknown'}`)
+			.join(', ');
+	};
 
-	// Process customers
-	if (data.customers && Array.isArray(data.customers)) {
-		processedData.customers = data.customers.map((customer: any) => ({
-			id: customer.id?.toString() || crypto.randomUUID(),
-			customerName: customer.customerName || 'Unknown Customer',
-			phoneNumber: customer.phoneNumber || '',
-			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || 0
-		}));
-	}
 
-	// Create finalData
-	processedData.finalData = processedData.products.map((product, index) => ({
-		id: index + 1,
-		invoiceId: processedData.invoices[0]?.serialNumber || null,
-		customerName: processedData.customers[0]?.customerName || null,
+	// Map invoices based on products and other data
+	const invoiceData = data.invoices?.[0] || {}; // Get the first (and only) invoice object
+	processedData.invoices = processedData.products.map((product) => ({
+		id: crypto.randomUUID(),
+		serialNumber: invoiceData.serialNumber || 'Unknown Invoice',
+		customerName: processedData.customers[0]?.customerName || 'Unknown Customer',
 		productName: product.productName,
 		quantity: product.quantity,
-		unitPrice: product.unitPrice,
-		tax: product.tax,
+		bankDetails: formatBankDetails(invoiceData.bankDetails) || '-',
 		priceWithTax: product.priceWithTax,
-		date: processedData.invoices[0]?.date || null
+		date: invoiceData.date || null,
 	}));
 
 	return processedData;

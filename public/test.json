@@ -1,73 +1,71 @@
 {
-  "invoiceNumber": "INV-54CZS",
-  "invoiceDate": "04 Nov 2024",
-  "placeOfSupply": "Assam",
   "products": [
     {
       "id": 1,
       "productName": "gertgerg rfreferf",
-      "quantity": 1.000,
-      "unitPrice": 0.00,
+      "quantity": 1.0,
+      "unitPrice": 0.0,
       "tax": null,
-      "priceWithTax": 0.00
+      "priceWithTax": 0.0,
+      "extractionNotes": "No tax percentage provided."
     },
     {
       "id": 2,
       "productName": "INDIE MIX POHA 500GM",
-      "quantity": 1.000,
+      "quantity": 1.0,
       "unitPrice": 35.7143,
-      "tax": "5%",
-      "priceWithTax": 35.71
+      "tax": 5,
+      "priceWithTax": 35.71,
+      "extractionNotes": null
     },
     {
       "id": 3,
       "productName": "Oxygen",
-      "quantity": 1.000,
+      "quantity": 1.0,
       "unitPrice": 423.7288,
-      "tax": "18%",
-      "priceWithTax": 423.73
+      "tax": 18,
+      "priceWithTax": 423.73,
+      "extractionNotes": null
     },
     {
       "id": 4,
       "productName": "New backde",
-      "quantity": 1.000,
-      "unitPrice": 1000.00,
+      "quantity": 1.0,
+      "unitPrice": 1000.0,
       "tax": null,
-      "priceWithTax": 1000.00
+      "priceWithTax": 1000.0,
+      "extractionNotes": "No tax percentage provided."
     },
     {
       "id": 5,
       "productName": "FESTIVE DRESS - FROCK",
-      "quantity": 1.000,
-      "unitPrice": 1000.00,
+      "quantity": 1.0,
+      "unitPrice": 1000.0,
       "tax": null,
-      "priceWithTax": 1000.00
+      "priceWithTax": 1000.0,
+      "extractionNotes": "No tax percentage provided."
     }
   ],
   "customers": [
     {
-      "id": null,
+      "id": 1,
       "customerName": "Test Assam",
-      "phoneNumber": null
+      "phoneNumber": "+91 9999999999",
+      "extractionNotes": null
     },
     {
-      "id": null,
-      "customerName": "Assam",
-      "phoneNumber": null
+      "id": 2,
+      "customerName": "Buyer (if other than consignee)",
+      "phoneNumber": null,
+      "extractionNotes": "Only address details provided for this buyer."
     }
   ],
-  "totalAmount": 3061814.98,
-  "amountDue": 3070343.30,
-  "bankDetails": {
-    "bank": "Example Bank",
-    "accountNumber": "1234567890",
-    "ifscCode": "IFSC0001234",
-    "branch": "Main Branch",
-    "beneficiaryName": "Vishnu"
-  },
-  "extractionNotes": {
-    "customerIds": "Customer IDs are not explicitly mentioned in the invoice.",
-    "productIds": "Product IDs are inferred from the serial number in the invoice.",
-    "phoneNumbers": "Phone numbers are missing from the invoice."
-  }
+  "invoices": [
+    {
+      "serialNumber": "INV-54CZS",
+      "totalAmount": 3061814.98,
+      "date": "04 Nov 2024",
+      "extractionNotes": null
+    }
+  ]
 }
