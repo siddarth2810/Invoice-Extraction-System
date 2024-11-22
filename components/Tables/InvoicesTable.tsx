@@ -5,6 +5,12 @@ import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Pencil, X, Check } from 'lucide-react';
 import { Invoice, updateInvoice } from '@/app/redux/slices/dataSlice';
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog"
 
 
 interface InvoicesTableProps {
@@ -15,13 +21,16 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 	const dispatch = useDispatch();
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editData, setEditData] = useState<Partial<Invoice>>({});
+	const [selectedText, setSelectedText] = useState<string | null>(null);
+	const [selectedProductText, setSelectedProductText] = useState<string | null>(null);
 
-	const startEdit = (item) => {
+	const startEdit = (item: Invoice) => {
 		setEditingId(item.id);
 		setEditData({
 			customerName: item.customerName,
 			productName: item.productName,
 			quantity: item.quantity,
+			bankDetails: item.bankDetails,
 			date: item.date
 		});
 	};
@@ -60,6 +69,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Details</th>
 								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
 								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
 								<th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -88,7 +98,30 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 												className="w-full"
 											/>
 										) : (
-											item.productName
+											<div className="relative">
+												<button
+													onClick={() => setSelectedProductText(item.productName)}
+													className="text-left hover:text-gray-600 focus:outline-none"
+												>
+													<span className="truncate block w-40" title={item.productName}>
+														{item.productName ? `${item.productName.slice(0, 20)}...` : '-'}
+													</span>
+												</button>
+
+												<Dialog open={!!selectedProductText} onOpenChange={() => setSelectedProductText(null)}>
+													<DialogContent className="max-w-2xl bg-white rounded-lg shadow-lg border border-gray-200">
+														<DialogHeader className="border-b pb-2">
+															<DialogTitle className="text-lg font-semibold">Product Name</DialogTitle>
+														</DialogHeader>
+
+														<div className="p-4">
+															<p className="text-sm whitespace-pre-wrap break-words">
+																{selectedProductText || 'No details available'}
+															</p>
+														</div>
+													</DialogContent>
+												</Dialog>
+											</div>
 										)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
@@ -103,6 +136,43 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 											item.quantity
 										)}
 									</td>
+									<td className="px-6 py-4 whitespace-nowrap">
+										{editingId === item.id ? (
+											<Input
+												type="string"
+												value={editData.bankDetails}
+												onChange={(e) => handleChange('bankDetails', e.target.value)}
+												className="w-full"
+											/>
+										) : (
+											<div className="relative">
+												<button
+													onClick={() => setSelectedText(item.bankDetails)}
+													className="text-left hover:text-gray-600 focus:outline-none"
+												>
+													<span className="truncate block w-40" title={item.bankDetails}>
+														{item.bankDetails ? `${item.bankDetails.slice(0, 30)}...` : '-'}
+													</span>
+												</button>
+
+												<Dialog open={!!selectedText} onOpenChange={() => setSelectedText(null)}>
+													<DialogContent className="max-w-2xl bg-white rounded-lg shadow-lg border border-gray-200">
+														<DialogHeader className="border-b pb-2">
+															<DialogTitle className="text-lg font-semibold">Bank Details</DialogTitle>
+														</DialogHeader>
+
+														<div className="p-4">
+															<p className="text-sm whitespace-pre-wrap break-words">
+																{selectedText || 'No details available'}
+															</p>
+														</div>
+													</DialogContent>
+												</Dialog>
+
+											</div>
+										)}
+									</td>
+
 									<td className="px-6 py-4 whitespace-nowrap text-right">
 										{item.priceWithTax}
 									</td>

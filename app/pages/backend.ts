@@ -1,8 +1,8 @@
 'use server'
 // app/actions/backend.ts
-//import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
-import path from "path";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+//import fs from "fs";
+//import path from "path";
 
 
 //customerId, productId and unit price
@@ -14,6 +14,7 @@ interface Invoice {
 	quantity: number;
 	priceWithTax: number;
 	date: string;
+	bankDetails: string;
 }
 
 interface Product {
@@ -29,6 +30,7 @@ interface Customer {
 	id: string;
 	customerName: string;
 	phoneNumber: string;
+	address: string;
 	totalPurchaseAmount: number;
 }
 
@@ -48,66 +50,65 @@ export async function generateContent(formData: FormData) {
 
 		const extractedText: string = await extractPdfOrImageContent(file);
 
-		//		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
-		//		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
-		//		const prompt = `
-		//g
-		//      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
-		//        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
-		//        customers : (id, customer name ,  phoneNumber),  
-		//        invoices: (serial number or invoice number, total amount, date)
-		//
-		//	Instructions:
-		//      1. Map all extracted information to the appropriate fields in the structure above.
-		//      2. If a field is missing or cannot be accurately determined, use null for that field.
-		//      3. If there are multiple products or customers, include them all in their respective arrays.
-		//      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
-		//      5. Tax is usually found in percentage at the bottom of the invoice pdf or images
-		//      Provide the most accurate and complete JSON possible based on the extracted information.
-		//
-		//`;
-		//
-		//		const result = await model.generateContent([
-		//			{
-		//				inlineData: {
-		//					mimeType: "application/pdf",
-		//					data: extractedText
-		//				}
-		//			},
-		//			{ text: prompt }
-		//		]);
-		//
-		//		const responseText = result.response.text();
-		//		console.log("Raw AI Response:", responseText);
-		//
-		//		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		//		let extractedData: any;
-		//
-		//		try {
-		//			const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
-		//			extractedData = JSON.parse(cleanedText);
-		//		} catch (error) {
-		//			console.error("Error parsing cleaned AI response:", error);
-		//			const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-		//			if (jsonMatch) {
-		//				try {
-		//					extractedData = JSON.parse(jsonMatch[0]);
-		//				} catch (innerError) {
-		//					console.error("Error parsing extracted JSON:", innerError);
-		//					throw new Error("Failed to extract valid JSON from AI response");
-		//				}
-		//			} else {
-		//				throw new Error("No valid JSON structure found in AI response");
-		//			}
-		//		}
-		//
-		//		console.log("Parsed Extracted Data:", extractedData);
+		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
+		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
+		const prompt = `
+						      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
+						        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
+						        customers : (id, customer name, phoneNumber, address),  
+						        invoices: (serial number, total amount, date, bank details)
+						
+							Instructions:
+						      1. Map all extracted information to the appropriate fields in the structure above.
+						      2. If a field is missing or cannot be accurately determined, use null for that field.
+						      3. If there are multiple products or customers, include them all in their respective arrays.
+						      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
+						      5. Tax is usually found in percentage at the bottom of the invoice pdf or images, serial Number is invoice number if specially not found
+						      Provide the most accurate and complete JSON possible based on the extracted information.
+						
+						`;
+
+		const result = await model.generateContent([
+			{
+				inlineData: {
+					mimeType: "application/pdf",
+					data: extractedText
+				}
+			},
+			{ text: prompt }
+		]);
+
+		const responseText = result.response.text();
+		console.log("Raw AI Response:", responseText);
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let extractedData: any;
+
+		try {
+			const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
+			extractedData = JSON.parse(cleanedText);
+		} catch (error) {
+			console.error("Error parsing cleaned AI response:", error);
+			const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+			if (jsonMatch) {
+				try {
+					extractedData = JSON.parse(jsonMatch[0]);
+				} catch (innerError) {
+					console.error("Error parsing extracted JSON:", innerError);
+					throw new Error("Failed to extract valid JSON from AI response");
+				}
+			} else {
+				throw new Error("No valid JSON structure found in AI response");
+			}
+		}
+
+		console.log("Parsed Extracted Data:", extractedData);
 
 		// Process and validate the extracted data
 
 		// Read and parse the JSON file
-		const filePath = path.join(process.cwd(), 'public', 'test.json');
-		const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+		//	const filePath = path.join(process.cwd(), 'public', 'final.json');
+		//	const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 		const processedData = processExtractedData(extractedData);
 
 		console.log(processedData)
@@ -133,6 +134,7 @@ function processExtractedData(data: any): ExtractedData {
 			id: customer.id?.toString() || crypto.randomUUID(),
 			customerName: customer.customerName || 'Unknown Customer',
 			phoneNumber: customer.phoneNumber || '',
+			address: customer.address || '-',
 			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || Number(data.invoices?.[0]?.totalAmount) || 0
 		}));
 	}
@@ -148,6 +150,13 @@ function processExtractedData(data: any): ExtractedData {
 			priceWithTax: Number(product.priceWithTax) || 0
 		}));
 	}
+	const formatBankDetails = (bankDetails: any): string => {
+		if (!bankDetails || typeof bankDetails !== 'object') return 'N/A';
+		return Object.entries(bankDetails)
+			.map(([key, value]) => `${key}: ${value || 'Unknown'}`)
+			.join(', ');
+	};
+
 
 	// Map invoices based on products and other data
 	const invoiceData = data.invoices?.[0] || {}; // Get the first (and only) invoice object
@@ -157,8 +166,9 @@ function processExtractedData(data: any): ExtractedData {
 		customerName: processedData.customers[0]?.customerName || 'Unknown Customer',
 		productName: product.productName,
 		quantity: product.quantity,
+		bankDetails: formatBankDetails(invoiceData.bankDetails) || '-',
 		priceWithTax: product.priceWithTax,
-		date: invoiceData.date || null
+		date: invoiceData.date || null,
 	}));
 
 	return processedData;

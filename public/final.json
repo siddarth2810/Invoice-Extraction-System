@@ -1,0 +1,87 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "productName": "gertgerg rfreferf",
+      "quantity": 1.000,
+      "unitPrice": 0.00,
+      "tax": null,
+      "priceWithTax": 0.00
+    },
+    {
+      "id": 2,
+      "productName": "INDIE MIX POHA 500GM",
+      "quantity": 1.000,
+      "unitPrice": 35.7143,
+      "tax": 5,
+      "priceWithTax": 35.71
+    },
+    {
+      "id": 3,
+      "productName": "Oxygen",
+      "quantity": 1.000,
+      "unitPrice": 423.7288,
+      "tax": 18,
+      "priceWithTax": 423.73
+    },
+    {
+      "id": 29,
+      "productName": "debit card charges",
+      "quantity": null,
+      "unitPrice": null,
+      "tax": null,
+      "priceWithTax": 12345.00
+    },
+    {
+      "id": 30,
+      "productName": "Shipping Charges",
+      "quantity": null,
+      "unitPrice": null,
+      "tax": null,
+      "priceWithTax": 60.00
+    },
+    {
+      "id": 31,
+      "productName": "Shipping Charges",
+      "quantity": null,
+      "unitPrice": null,
+      "tax": null,
+      "priceWithTax": 60.00
+    },
+    {
+      "id": 32,
+      "productName": "Shipping Charges",
+      "quantity": null,
+      "unitPrice": null,
+      "tax": null,
+      "priceWithTax": 60.00
+    }
+  ],
+  "customers": [
+    {
+      "id": null,
+      "customerName": "Test Assam",
+      "phoneNumber": null,
+      "address": "Darrang, ASSAM, 784104"
+    },
+    {
+      "id": null,
+      "customerName": null,
+      "phoneNumber": "+91 9999999999",
+      "address": "H/No 1 59/9, M.S.R.Y Nilayam, 4th floor, Masjid Banda, Kondapur, Rangareddy, Hyderabad Bangalore South, KARNATAKA, 560030"
+    }
+  ],
+  "invoices": [
+    {
+      "serialNumber": "INV-54CZS",
+      "totalAmount": 3061814.98,
+      "date": "04 Nov 2024",
+      "bankDetails": {
+        "bank": "Example Bank",
+        "accountNumber": "1234567890",
+        "IFSCCode": "IFSC0001234",
+        "branch": "Main Branch"
+      }
+    }
+  ]
+}

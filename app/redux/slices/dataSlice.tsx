@@ -13,6 +13,7 @@ export interface Customer {
   id: string;
   customerName: string;
   phoneNumber: string;
+  address: string;
   totalPurchaseAmount: number;
 }
 
@@ -24,6 +25,7 @@ export interface Invoice {
   quantity: number;
   priceWithTax: number;
   date: string;
+  bankDetails: string;
 }
 
 interface AppState {
@@ -66,7 +68,7 @@ const dataSlice = createSlice({
               ...invoice,
               productName: updatedProduct.productName,
               priceWithTax: updatedProduct.priceWithTax,
-              quantity: updateProduct.quantity// Preserve the original quantity from the invoice
+              quantity: invoice.quantity // Preserve the original quantity from the invoice
             };
           }
           return invoice;
@@ -142,6 +144,7 @@ const dataSlice = createSlice({
         customerName: invoice.customerName || '',
         productName: invoice.productName || '',
         quantity: invoice.quantity || 0,
+        bankDetails: invoice.bankDetails || '-',
         priceWithTax: invoice.priceWithTax || 0,
         date: invoice.date || ''
       }));
