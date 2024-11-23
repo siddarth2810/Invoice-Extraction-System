@@ -25,24 +25,57 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    setFile(selectedFile || null)
-  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setIsLoading(true);
+
+      const selectedFile = e.target.files?.[0];
+      if (!selectedFile) {
+        return;
+      }
+
+      const validFileTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'application/pdf'
+      ];
+
+      const isValidType = validFileTypes.includes(selectedFile.type) ||
+        selectedFile.type.startsWith('image/');
+
+      if (!isValidType) {
+        alert('Please upload a PDF, Excel file, or image');
+        return;
+      }
+
+      setFile(selectedFile);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      alert('Error processing file. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!file) {
-      alert('Please upload a PDF first')
-      return
+      alert('Please upload a file first')
+      return;
     }
+
     try {
       setIsLoading(true)
+
+      // Handle other file types using existing logic
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('fileType', file.type)
       const extractedData = await generateContent(formData)
       dispatch(setInitialData(extractedData))
     } catch (error) {
       console.error('Failed to generate content', error)
+      alert('Error processing file. Please try again.')
     } finally {
       setIsLoading(false)
     }

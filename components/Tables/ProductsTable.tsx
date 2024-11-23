@@ -14,7 +14,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 	const dispatch = useDispatch();
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editData, setEditData] = useState<Partial<Product>>({});
-
 	const startEdit = (product: Product) => {
 		setEditingId(product.id);
 		setEditData({
