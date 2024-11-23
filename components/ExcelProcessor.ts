@@ -1,32 +1,30 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as XLSX from 'xlsx';
+//import { Product, Customer, Invoice } from "@/app/redux/slices/dataSlice"
 
-// Define interfaces for processed data
-interface Product {
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  tax: number;
-  priceWithTax: number;
-}
+// ... keeping the interfaces as they are ...
 
-interface Customer {
-  customerName: string;
-  phoneNumber: number;
-  address: string;
-}
-
-interface Invoice {
-  serialNumber: string;
-  totalAmount: number;
-  date: string;
-  bankDetails: null;
-}
 
 interface ProcessedData {
-  products: Product[];
-  customers: Customer[];
-  invoices: Invoice[];
+  products: Array<{
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    tax: number;
+    priceWithTax: number;
+  }>;
+  customers: Array<{
+    customerName: string;
+    phoneNumber: string;  // Changed to string since phone numbers should be strings
+    address: string;
+    totalPurchaseAmount: number;
+  }>;
+  invoices: Array<{
+    serialNumber: string;
+    totalAmount: number;
+    date: string;
+    bankDetails: string;
+  }>;
 }
 
 interface AIMapping {
@@ -50,24 +48,85 @@ interface AIMapping {
   };
 }
 
+
 export default async function processAllData(excelData: ArrayBuffer): Promise<ProcessedData> {
-  // Read the Excel file
   const data = new Uint8Array(excelData);
-  const workbook = XLSX.read(data, { type: 'array' });
+  const workbook = XLSX.read(data, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
-  // Convert worksheet to JSON with headers
-  const jsonData = XLSX.utils.sheet_to_json(worksheet) as Record<string, string | number>[];
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // Convert worksheet to JSON
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  const validData: unknown = [];
+  const summaryData = [];
+  const emptyRows = [];
 
-  // First get the AI mapping from sample rows
-  const mapping = await getAIMapping(jsonData);
+  // Get headers from the first row
+  const headers = jsonData[0] || [];
 
-  // Then process all rows using the mapping
-  return applyMapping(jsonData, mapping);
+  jsonData.forEach((row, rowIndex) => {
+    const rowNumber = rowIndex + 1;
+
+    if (!row || row.every((cell) => cell === undefined || cell === null || cell === '')) {
+      emptyRows.push(rowNumber);
+      return;
+    }
+
+    if (!row[0] && row.some((cell) => cell !== undefined)) {
+      summaryData.push({
+        row_number: rowNumber,
+        data: row.filter((cell) => cell !== undefined),
+      });
+      return;
+    }
+
+    const rowData = {};
+    let hasData = false;
+
+    headers.forEach((header, index) => {
+      if (header) {
+        const value = row[index] || row[index] === 0 ? row[index] : header;
+        if (value !== undefined && value !== null && value !== '') {
+          rowData[header] = value;
+          hasData = true;
+        }
+      }
+      null
+    });
+
+    if (hasData) {
+      validData.push({
+        row_number: rowNumber,
+        data: rowData
+      });
+    }
+  });
+
+  return await firstProcess(validData);
 }
 
-function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMapping): ProcessedData {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function firstProcess(rawData: any[]): Promise<ProcessedData> {
+  try {
+    // Get AI mapping for the data structure
+    const mapping = await getAIMapping(rawData);
+    console.log('AI Mapping:', mapping);
+
+    // Process the data using the mapping
+    return applyMapping(rawData, mapping);
+  } catch (error) {
+    console.error('Error in firstProcess:', error);
+    throw error;
+  }
+}
+
+function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
+  if (!Array.isArray(jsonData)) {
+    console.error('Invalid jsonData:', jsonData);
+    throw new Error('jsonData must be an array');
+  }
+
   const result: ProcessedData = {
     products: [],
     customers: [],
@@ -75,9 +134,13 @@ function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMa
   };
 
   // Process each row
-  jsonData.forEach(data => {
+  jsonData.forEach(row => {
+    const data = row.data; // Access the data property of the row object
+
     // Safely get values with fallbacks
     const getValue = (fieldPath: string): string | number | null => {
+      if (!fieldPath) return null;
+
       const parts = fieldPath.split('/').map(p => p.trim());
       if (parts.length === 1) {
         return data[fieldPath] ?? null;
@@ -86,13 +149,13 @@ function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMa
       if (parts[1] === 'Qty') {
         const total = parseFloat(String(data[parts[0]] || '0'));
         const qty = parseFloat(String(data['Qty'] || '1'));
-        return total / qty;
+        return isNaN(total / qty) ? 0 : total / qty;
       }
       return null;
     };
 
     // Map products
-    const product: Product = {
+    const product = {
       productName: String(getValue(mapping.products.productName) || ''),
       quantity: parseFloat(String(getValue(mapping.products.quantity) || '0')),
       unitPrice: Number(getValue(mapping.products.unitPrice) || 0),
@@ -105,7 +168,7 @@ function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMa
     }
 
     // Map customers
-    const customer: Customer = {
+    const customer = {
       customerName: String(getValue(mapping.customers.customerName) || ''),
       phoneNumber: parseInt(String(getValue(mapping.customers.phoneNumber) || '0')),
       address: String(getValue(mapping.customers.address) || '')
@@ -117,7 +180,7 @@ function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMa
     }
 
     // Map invoices
-    const invoice: Invoice = {
+    const invoice = {
       serialNumber: String(getValue(mapping.invoices.serialNumber) || ''),
       totalAmount: parseFloat(String(getValue(mapping.invoices.totalAmount) || '0')),
       date: String(getValue(mapping.invoices.date) || ''),
@@ -133,13 +196,13 @@ function applyMapping(jsonData: Record<string, string | number>[], mapping: AIMa
   return result;
 }
 
-async function getAIMapping(jsonData: Record<string, string | number>[]): Promise<AIMapping> {
+async function getAIMapping(jsonData: any[]): Promise<AIMapping> {
   // Get 3 random sample rows
-  const sampleRows = [...jsonData]
+  const sampleRows = jsonData
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
 
-  const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+  const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-002",
     generationConfig: {
@@ -151,11 +214,10 @@ async function getAIMapping(jsonData: Record<string, string | number>[]): Promis
   const prompt = `
     Given these sample rows from my dataset: ${JSON.stringify(sampleRows, null, 2)}
 
-    Analyze these rows and create a mapping to this structure:
+    Analyze these rows and create a mapping to this structure, use their row numbers to keep track:
     - products: (productName, quantity, unitPrice, tax, priceWithTax)
-    - customers: (customerName, phoneNumber, address)
-    - invoices: (serialNumber, totalAmount, date, bankDetails)
-
+    - customers: (customerName, phoneNumber, address, total Purchase Amount)
+    - invoices: (serialNumber, customerName, productName, quantity totalAmount, bankDetails, Date)
     Look at the sample data and determine which fields best match each required field.
     For computed fields like unitPrice, you can specify calculations (e.g. "Item Total Amount / Qty").
     If a field doesn't have a clear match, return null.
@@ -174,9 +236,13 @@ async function getAIMapping(jsonData: Record<string, string | number>[]): Promis
           "customerName": "<matching field name>",
           "phoneNumber": "<matching field name>",
           "address": "<matching field name>"
+          "totalPurchaseAmount": "<matching field name>",
         },
         "invoices": {
           "serialNumber": "<matching field name>",
+          "customerName": "<matching field name>",
+          "productName": "<matching field name>",
+          "quantity": "<matching field name>",
           "totalAmount": "<matching field name>",
           "date": "<matching field name>",
           "bankDetails": null

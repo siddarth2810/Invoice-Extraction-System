@@ -129,7 +129,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 										)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-right">
-										{customer.totalPurchaseAmount.toFixed(2)}
+										{customer.totalPurchaseAmount}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-center">
 										{editingId === customer.id ? (
