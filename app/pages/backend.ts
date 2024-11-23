@@ -47,78 +47,89 @@ export async function generateContent(formData: FormData) {
 		if (!file || !(file instanceof File)) {
 			throw new Error('No file uploaded');
 		}
+		 // Add file size check
+		 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit
+		 if (file.size > MAX_FILE_SIZE) {
+			 throw new Error('File size exceeds 5MB limit');
+		 }
+
 
 		const extractedText: string = await extractPdfOrImageContent(file);
-
 		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
-		const prompt = `
-						      Meticulously extract ALL invoice details. Your JSON response MUST include the below values:
-						        products : (id, product name, quantity, unitPrice, tax, priceWithTax),
-						        customers : (id, customer name, phoneNumber, address),  
-						        invoices: (serial number, total amount, date, bank details)
-						
-							Instructions:
-						      1. Map all extracted information to the appropriate fields in the structure above.
-						      2. If a field is missing or cannot be accurately determined, use null for that field.
-						      3. If there are multiple products or customers, include them all in their respective arrays.
-						      4. For any ambiguous or challenging extractions, add an "extractionNotes" field to the relevant object explaining the issue.
-						      5. Tax is usually found in percentage at the bottom of the invoice pdf or images, serial Number is invoice number if specially not found
-						      Provide the most accurate and complete JSON possible based on the extracted information.
-						
-						`;
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash-002",
+            generationConfig: {
+                maxOutputTokens: 8192,
+                temperature: 0.1,
+            },
+        });
 
-		const result = await model.generateContent([
-			{
-				inlineData: {
-					mimeType: "application/pdf",
-					data: extractedText
-				}
-			},
-			{ text: prompt }
-		]);
+        // Split into two parallel requests for faster processing
+        const [productsResult, metadataResult] = await Promise.all([
+            // Products extraction
+            model.generateContent([
+                { inlineData: { mimeType: "application/pdf", data: extractedText }},
+                { text: `Extract ONLY product details from the invoice. Return JSON with:
+                    products ( 
+                        product Name, quantity, unitPrice, tax, priceWithTax 
+                    ),
+                    Focus on accuracy of numbers and product details.` 
+                }
+            ]),
 
-		const responseText = result.response.text();
-		console.log("Raw AI Response:", responseText);
+            // Customer and invoice details
+            model.generateContent([
+                { inlineData: { mimeType: "application/pdf", data: extractedText }},
+                { text: `Extract ONLY customer and invoice details. Return JSON with:
+                    customers ( 
+                        customer Name, phoneNumber, address
+                    ),
+                    invoices (
+                        serial Number,
+                        total Amount,
+                        date,
+                        bank Details
+                    )` 
+                }
+            ])
+        ]);
+		const productsData = await parseAIResponse(productsResult.response.text());
+        const metadataData = await parseAIResponse(metadataResult.response.text());
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let extractedData: any;
+        // Combine the results
+        const combinedData = {
+            products: productsData.products || [],
+            customers: metadataData.customers || [],
+            invoices: metadataData.invoices || []
+        };
 
-		try {
-			const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
-			extractedData = JSON.parse(cleanedText);
-		} catch (error) {
-			console.error("Error parsing cleaned AI response:", error);
-			const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-			if (jsonMatch) {
-				try {
-					extractedData = JSON.parse(jsonMatch[0]);
-				} catch (innerError) {
-					console.error("Error parsing extracted JSON:", innerError);
-					throw new Error("Failed to extract valid JSON from AI response");
-				}
-			} else {
-				throw new Error("No valid JSON structure found in AI response");
-			}
-		}
+        return processExtractedData(combinedData);
+        //const filePath = path.join(process.cwd(), 'public', 'final.json');
+		//const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+		//const processedData = processExtractedData(extractedData);
+		//return processedData;
 
-		console.log("Parsed Extracted Data:", extractedData);
-
-		// Process and validate the extracted data
-
-		// Read and parse the JSON file
-		//	const filePath = path.join(process.cwd(), 'public', 'final.json');
-		//	const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-		const processedData = processExtractedData(extractedData);
-
-		console.log(processedData)
-		return processedData;
-
-	} catch (error) {
-		console.error("Error in generateContent:", error);
-		throw new Error(error instanceof Error ? error.message : 'Failed to generate content');
-	}
+    } catch (error) {
+        console.error("Error in generateContent:", error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to generate content');
+    }
 }
+
+async function parseAIResponse(responseText: string) {
+    try {
+        // First try cleaning JSON markers
+        const cleanedText = responseText.replace(/```json\n|\n```/g, '').trim();
+        return JSON.parse(cleanedText);
+    } catch (error) {
+        // Fallback to extracting JSON from text
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        console.error("Error in parseAIResponse:", error);
+    }
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function processExtractedData(data: any): ExtractedData {
 	// Initialize processed data structure

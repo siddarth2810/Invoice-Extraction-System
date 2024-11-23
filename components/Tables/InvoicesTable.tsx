@@ -27,6 +27,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 	const startEdit = (item: Invoice) => {
 		setEditingId(item.id);
 		setEditData({
+			serialNumber: item.serialNumber,
 			customerName: item.customerName,
 			productName: item.productName,
 			quantity: item.quantity,
@@ -78,7 +79,17 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 						<tbody className="divide-y divide-gray-200">
 							{invoices.map((item) => (
 								<tr key={item.id} className="hover:bg-gray-50 transition-colors">
-									<td className="px-6 py-4 whitespace-nowrap">{item.serialNumber}</td>
+									<td className="px-6 py-4 whitespace-nowrap">
+									{editingId === item.id ? (
+											<Input
+												value={editData.serialNumber}
+												onChange={(e) => handleChange('serialNumber', e.target.value)}
+												className="w-full"
+											/>
+										) : (
+											item.serialNumber
+										)}
+									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										{editingId === item.id ? (
 											<Input
