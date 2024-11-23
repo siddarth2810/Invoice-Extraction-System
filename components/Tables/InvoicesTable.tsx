@@ -12,7 +12,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 
-
 interface InvoicesTableProps {
 	invoices: Invoice[];
 }
@@ -80,7 +79,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 							{invoices.map((item) => (
 								<tr key={item.id} className="hover:bg-gray-50 transition-colors">
 									<td className="px-6 py-4 whitespace-nowrap">
-									{editingId === item.id ? (
+										{editingId === item.id ? (
 											<Input
 												value={editData.serialNumber}
 												onChange={(e) => handleChange('serialNumber', e.target.value)}
