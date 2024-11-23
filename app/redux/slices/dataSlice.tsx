@@ -106,7 +106,8 @@ const dataSlice = createSlice({
       if (invoiceIndex !== -1) {
         const updatedInvoice = {
           ...state.invoices[invoiceIndex],
-          ...updates
+          ...updates,
+          serialNumber: updates.serialNumber || state.invoices[invoiceIndex].serialNumber
         };
         state.invoices[invoiceIndex] = updatedInvoice;
 

@@ -10,7 +10,6 @@ import ProductsTable from "@/components/Tables/ProductsTable"
 import CustomersTable from "@/components/Tables/CustomersTable"
 import InvoicesTable from "@/components/Tables/InvoicesTable"
 import { Loader2 } from 'lucide-react'
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -51,7 +50,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white text-[#575279] p-8">
-      <div className="px-28 py-6">
+      <div className="px-12 py-6">
         <h1 className="text-4xl font-bold mb-8 text-[#907aa9] tracking-tight">
           Invoice Data Extraction System
         </h1>
