@@ -44,17 +44,14 @@ interface ExtractedData {
 
 
 export async function generateContent(formData: FormData) {
+
+
 	try {
 		const file = formData.get('file') as File;
 		if (!file || !(file instanceof File)) {
 			throw new Error('No file uploaded');
 		}
 
-		// Add file size check
-		const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit
-		if (file.size > MAX_FILE_SIZE) {
-			throw new Error('File size exceeds 5MB limit');
-		}
 
 		// Check if file is Excel
 		if (
@@ -64,13 +61,15 @@ export async function generateContent(formData: FormData) {
 			// Convert File to ArrayBuffer before processing
 			const buffer = await file.arrayBuffer();
 			const extractedData = await processAllData(buffer);
+			console.log("got this from excel \n")
+			console.log("got this from excel \n")
+			console.log(extractedData)
 			return processExtractedData(extractedData);
 		}
 
 
-
 		const extractedText: string = await extractPdfOrImageContent(file);
-		const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
+		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
 		const model = genAI.getGenerativeModel({
 			model: "gemini-1.5-flash-002",
 			generationConfig: {
@@ -99,7 +98,7 @@ export async function generateContent(formData: FormData) {
 				{
 					text: `Extract ONLY customer and invoice details. Return JSON with:
 		                    customers ( 
-		                        customer Name, phoneNumber, address
+		                        customer Name, phoneNumber, address, total purchase amount
 		                    ),
 		                    invoices (
 		                        serial Number,
@@ -148,33 +147,42 @@ async function parseAIResponse(responseText: string) {
 	}
 }
 
-/*
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function isExcelProcessedData(data: any): boolean {
 	// Check if data has the exact structure we expect from Excel processing
 	return (
 		data &&
 		Array.isArray(data.products) &&
-		Array.isArray(data.customers) &&
 		Array.isArray(data.invoices) &&
-		data.products[0]?.hasOwnProperty('productName')
+		data.invoices[0]?.hasOwnProperty('productName')
 	);
 }
 
-*/
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Example usage
+async function extractPdfOrImageContent(file: File): Promise<string> {
+	const arrayBuffer = await file.arrayBuffer();
+	const base64File = Buffer.from(arrayBuffer).toString('base64');
+	return base64File;
+}
+
 function processExtractedData(data: any): ExtractedData {
-	/*
 	if (isExcelProcessedData(data)) {
-		// For Excel data, we can return it directly as it's already in the correct format
+		// For Excel data, ensure there's at least one default customer
+		const processedCustomers = data.customers.length > 0 ? data.customers : [{
+			id: crypto.randomUUID(),
+			customerName: '-',
+			phoneNumber: '-',
+			address: '-',
+			totalPurchaseAmount: 0
+		}];
+
 		return {
-			customers: data.customers,
+			customers: processedCustomers,
 			products: data.products,
-			invoices: data.invoices.map((invoice: any) => ({
-				...invoice,
-				products: data.products // Add products to each invoice
-			}))
+			invoices: data.invoices
 		};
-	}*/
+	}
 
 	// Initialize processed data structure
 	const processedData: ExtractedData = {
@@ -183,15 +191,24 @@ function processExtractedData(data: any): ExtractedData {
 		customers: []
 	};
 
-	// Process customers
-	if (Array.isArray(data.customers)) {
+	// Process customers with default row if empty
+	if (Array.isArray(data.customers) && data.customers.length > 0) {
 		processedData.customers = data.customers.map((customer: any) => ({
 			id: customer.id?.toString() || crypto.randomUUID(),
 			customerName: customer.customerName || 'Unknown Customer',
-			phoneNumber: customer.phoneNumber || '',
+			phoneNumber: customer.phoneNumber || '-',
 			address: customer.address || '-',
-			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || Number(data.invoices?.[0]?.totalAmount) || 0
+			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || Number(data.invoices?.[1]?.totalAmount) || 0
 		}));
+	} else {
+		// Add a default customer row when no customers exist
+		processedData.customers = [{
+			id: crypto.randomUUID(),
+			customerName: '-',
+			phoneNumber: '-',
+			address: '-',
+			totalPurchaseAmount: 0
+		}];
 	}
 
 	// Process products
@@ -205,6 +222,7 @@ function processExtractedData(data: any): ExtractedData {
 			priceWithTax: Number(product.priceWithTax) || 0
 		}));
 	}
+
 	const formatBankDetails = (bankDetails: any): string => {
 		if (!bankDetails || typeof bankDetails !== 'object') return 'N/A';
 		return Object.entries(bankDetails)
@@ -213,11 +231,11 @@ function processExtractedData(data: any): ExtractedData {
 	};
 
 	// Map invoices based on products and other data
-	const invoiceData = data.invoices?.[0] || {}; // Get the first (and only) invoice object
+	const invoiceData = data.invoices?.[0] || {};
 	processedData.invoices = processedData.products.map((product) => ({
 		id: crypto.randomUUID(),
 		serialNumber: invoiceData.serialNumber || 'Unknown Invoice',
-		customerName: processedData.customers[0]?.customerName || 'Unknown Customer',
+		customerName: processedData.customers[0]?.customerName || '-',
 		productName: product.productName,
 		quantity: product.quantity,
 		bankDetails: formatBankDetails(invoiceData.bankDetails) || '-',
@@ -225,13 +243,5 @@ function processExtractedData(data: any): ExtractedData {
 		date: invoiceData.date || null,
 	}));
 
-
 	return processedData;
-}
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Example usage
-async function extractPdfOrImageContent(file: File): Promise<string> {
-	const arrayBuffer = await file.arrayBuffer();
-	const base64File = Buffer.from(arrayBuffer).toString('base64');
-	return base64File;
 }
