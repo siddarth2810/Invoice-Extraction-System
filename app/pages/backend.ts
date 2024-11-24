@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import processAllData from "@/components/ExcelProcessor";
 //import fs from "fs";
 //import path from "path";
-
+import sharp from 'sharp';
 
 //customerId, productId and unit price
 interface Invoice {
@@ -45,13 +45,11 @@ interface ExtractedData {
 
 export async function generateContent(formData: FormData) {
 
-
 	try {
 		const file = formData.get('file') as File;
 		if (!file || !(file instanceof File)) {
 			throw new Error('No file uploaded');
 		}
-
 
 		// Check if file is Excel
 		if (
@@ -68,7 +66,21 @@ export async function generateContent(formData: FormData) {
 		}
 
 
-		const extractedText: string = await extractPdfOrImageContent(file);
+		let extractedText: string = await extractPdfContent(file);
+		let mimeType: string;
+
+		if (file.type === 'application/pdf') {
+			extractedText = await extractPdfContent(file);
+			mimeType = 'application/pdf';
+		} else if (file.type.startsWith('image/')) {
+			validateImageFile(file)
+			const result = await processImage(file);
+			extractedText = result.data;
+			mimeType = result.mimeType;
+		} else {
+			throw new Error('Unsupported file type');
+		}
+
 		const genAI = new GoogleGenerativeAI(process.env.API_KEY as string);
 		const model = genAI.getGenerativeModel({
 			model: "gemini-1.5-flash-002",
@@ -78,60 +90,98 @@ export async function generateContent(formData: FormData) {
 			},
 		});
 
-		//Split into two parallel requests for faster processing
 		const [productsResult, metadataResult] = await Promise.all([
-			// Products extraction
 			model.generateContent([
-				{ inlineData: { mimeType: "application/pdf", data: extractedText } },
+				{ inlineData: { mimeType, data: extractedText } },
 				{
 					text: `Extract ONLY product details from the invoice. Return JSON with:
-		                    products ( 
-		                        product Name, quantity, unitPrice, tax, priceWithTax 
-		                    ),
-		                    Focus on accuracy of numbers and product details.`
+                    products ( 
+                        product Name, quantity, unitPrice, tax, priceWithTax 
+                    ),
+                    Focus on accuracy of numbers and product details.`
 				}
 			]),
-
-			// Customer and invoice details
 			model.generateContent([
-				{ inlineData: { mimeType: "application/pdf", data: extractedText } },
+				{ inlineData: { mimeType, data: extractedText } },
 				{
 					text: `Extract ONLY customer and invoice details. Return JSON with:
-		                    customers ( 
-		                        customer Name, phoneNumber, address, total purchase amount
-		                    ),
-		                    invoices (
-		                        serial Number,
-		                        total Amount,
-		                        date,
-		                        bank Details
-		                    )`
+                    customers ( 
+                        customer Name, phoneNumber, address, total purchase amount
+                    ),
+                    invoices (
+                        serial Number,
+                        total Amount,
+                        date,
+                        bank Details
+                    )`
 				}
 			])
 		]);
-		console.log(`before parseAI ${productsResult.response.text()}`)
+
+		console.log(`before parseAI ${productsResult.response.text()}`);
 		const productsData = await parseAIResponse(productsResult.response.text());
 		const metadataData = await parseAIResponse(metadataResult.response.text());
 
-		// Combine the results
 		const combinedData = {
 			products: productsData.products || [],
 			customers: metadataData.customers || [],
 			invoices: metadataData.invoices || []
 		};
-		console.log(`after processing combined data ${combinedData}`)
+		console.log(`after processing combined data ${JSON.stringify(combinedData)}`);
 
 		return processExtractedData(combinedData);
-		/*
-		const filePath = path.join(process.cwd(), 'public', 'final.json');
-		const extractedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-		const processedData = processExtractedData(extractedData);
-		return processedData;*/
 
 	} catch (error) {
 		console.error("Error in generateContent:", error);
 		throw new Error(error instanceof Error ? error.message : 'Failed to generate content');
 	}
+}
+async function processImage(file: File) {
+    try {
+        // First optimize the image
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        const processedBuffer = await sharp(buffer)
+            .resize(1024, 1024, {
+                fit: 'inside',
+                withoutEnlargement: true
+            })
+            .jpeg({ quality: 80 })
+            .toBuffer();
+
+        // Convert processed buffer to base64
+        const base64Data = processedBuffer.toString('base64');
+
+        return {
+            data: base64Data,
+            mimeType: "image/jpeg"
+        };
+    } catch (error) {
+        console.error("Error processing image:", error);
+        throw error;
+    }
+}
+// Helper function to validate file before processing
+function validateImageFile(file: File): boolean {
+	const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+	const maxSize = 10 * 1024 * 1024; // 10MB limit
+
+	if (!validTypes.includes(file.type)) {
+		throw new Error('Invalid file type. Please upload a valid image file.');
+	}
+
+	if (file.size > maxSize) {
+		throw new Error('File size too large. Please upload an image smaller than 10MB.');
+	}
+
+	return true;
+}
+
+
+async function extractPdfContent(file: File): Promise<string> {
+	const arrayBuffer = await file.arrayBuffer();
+	return Buffer.from(arrayBuffer).toString('base64');
 }
 
 async function parseAIResponse(responseText: string) {
@@ -161,12 +211,6 @@ function isExcelProcessedData(data: any): boolean {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Example usage
-async function extractPdfOrImageContent(file: File): Promise<string> {
-	const arrayBuffer = await file.arrayBuffer();
-	const base64File = Buffer.from(arrayBuffer).toString('base64');
-	return base64File;
-}
 
 function processExtractedData(data: any): ExtractedData {
 	if (isExcelProcessedData(data)) {
@@ -246,4 +290,23 @@ function processExtractedData(data: any): ExtractedData {
 	}));
 
 	return processedData;
+}
+
+// Mark the function as a server action
+export async function processImageAction(formData: FormData) {
+	'use server'; // This line is important!
+
+	try {
+		const file = formData.get('file') as File;
+
+		if (!file) {
+			throw new Error('No file provided');
+		}
+
+		const result = await processImage(file);
+		return { success: true, data: result };
+	} catch (error) {
+		console.error('Error:', error);
+		return { success: false, error: 'Error processing image' };
+	}
 }
