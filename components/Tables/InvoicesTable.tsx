@@ -61,24 +61,24 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 	return (
 		<TabsContent value="invoices">
 			{invoices.length > 0 ? (
-				<div className="bg-white shadow-md rounded-lg overflow-hidden">
+				<div className="table-container">
 					<table className="w-full">
-						<thead className="bg-gray-100 border-b">
+						<thead className="table-header">
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice ID</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Details</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-								<th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+								<th>Invoice ID</th>
+								<th>Customer Name</th>
+								<th>Product Name</th>
+								<th>Quantity</th>
+								<th>Bank Details</th>
+								<th>Price With Tax</th>
+								<th>Date</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-gray-200">
+						<tbody className="table-body">
 							{invoices.map((item) => (
-								<tr key={item.id} className="hover:bg-gray-50 transition-colors">
-									<td className="px-6 py-4 whitespace-nowrap">
+								<tr key={item.id} className="table-row">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<Input
 												value={editData.serialNumber}
@@ -89,7 +89,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 											item.serialNumber
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<Input
 												value={editData.customerName}
@@ -100,7 +100,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 											item.customerName
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<Input
 												value={editData.productName}
@@ -134,7 +134,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 											</div>
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<Input
 												type="number"
@@ -146,7 +146,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 											item.quantity
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<Input
 												type="string"
@@ -183,13 +183,13 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices }) => {
 										)}
 									</td>
 
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+									<td className="table-cell">
 										{item.priceWithTax}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+									<td className="table-cell">
 										{item.date}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-center">
+									<td className="table-cell">
 										{editingId === item.id ? (
 											<div className="flex justify-center space-x-2">
 												<Button

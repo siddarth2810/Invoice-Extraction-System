@@ -48,22 +48,22 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 	return (
 		<TabsContent value="products">
 			{products.length > 0 ? (
-				<div className="bg-white shadow-md rounded-lg overflow-hidden">
+				<div className="table-container">
 					<table className="w-full">
-						<thead className="bg-gray-100 border-b">
+						<thead className="table-header">
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tax(%)</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price With Tax</th>
-								<th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+								<th>Name</th>
+								<th>Quantity</th>
+								<th>Unit Price</th>
+								<th>Tax(%)</th>
+								<th>Price With Tax</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-gray-200">
+						<tbody className="table-body">
 							{products.map((product) => (
-								<tr key={product.id} className="hover:bg-gray-50 transition-colors">
-									<td className="px-6 py-4 whitespace-nowrap">
+								<tr key={product.id} className="table-row">
+									<td className="table-cell">
 										{editingId === product.id ? (
 											<Input
 												value={editData.productName || ''}
@@ -74,7 +74,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 											product.productName
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === product.id ? (
 											<Input
 												type="number"
@@ -86,7 +86,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 											product.quantity
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+									<td className="table-cell">
 										{editingId === product.id ? (
 											<Input
 												type="number"
@@ -98,7 +98,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 											product.unitPrice
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+									<td className="table-cell">
 										{editingId === product.id ? (
 											<Input
 												type="number"
@@ -110,10 +110,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 											product.tax
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+									<td className="table-cell">
 										{product.priceWithTax}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-center">
+									<td className="table-cell">
 										{editingId === product.id ? (
 											<div className="flex justify-center space-x-2">
 												<Button
