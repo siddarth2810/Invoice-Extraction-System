@@ -71,8 +71,8 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 						</thead>
 						<tbody className="divide-y divide-gray-200">
 							{customers.map((customer) => (
-								<tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-									<td className="px-6 py-4 whitespace-nowrap">
+								<tr key={customer.phoneNumber} className="hover:bg-gray-50 transition-colors">
+									< td className="px-6 py-4 whitespace-nowrap" >
 										{editingId === customer.id ? (
 											<Input
 												value={editData.customerName || ''}
@@ -166,11 +166,11 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 							))}
 						</tbody>
 					</table>
-				</div>
+				</div >
 			) : (
 				<p className="text-gray-500 text-center py-4">No customer data available</p>
 			)}
-		</TabsContent>
+		</TabsContent >
 	);
 };
 

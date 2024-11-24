@@ -109,6 +109,7 @@ export async function generateContent(formData: FormData) {
 				}
 			])
 		]);
+		console.log(`before parseAI ${productsResult.response.text()}`)
 		const productsData = await parseAIResponse(productsResult.response.text());
 		const metadataData = await parseAIResponse(metadataResult.response.text());
 
@@ -118,6 +119,7 @@ export async function generateContent(formData: FormData) {
 			customers: metadataData.customers || [],
 			invoices: metadataData.invoices || []
 		};
+		console.log(`after processing combined data ${combinedData}`)
 
 		return processExtractedData(combinedData);
 		/*
@@ -198,7 +200,7 @@ function processExtractedData(data: any): ExtractedData {
 			customerName: customer.customerName || 'Unknown Customer',
 			phoneNumber: customer.phoneNumber || '-',
 			address: customer.address || '-',
-			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || Number(data.invoices?.[1]?.totalAmount) || 0
+			totalPurchaseAmount: Number(customer.totalPurchaseAmount) || 0
 		}));
 	} else {
 		// Add a default customer row when no customers exist
