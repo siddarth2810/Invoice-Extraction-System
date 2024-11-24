@@ -1,17 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as XLSX from 'xlsx';
-//import { Product, Customer, Invoice } from "@/app/redux/slices/dataSlice"
 
 // ... keeping the interfaces as they are ...
-
 
 interface ProcessedData {
   products: Array<{
     productName: string;
-    quantity: number;
-    unitPrice: number;
-    tax: number;
-    priceWithTax: number;
+    quantity: string;
+    unitPrice: string;
+    tax: string;
+    priceWithTax: string;
   }>;
   customers: Array<{
     customerName: string;
@@ -21,9 +19,12 @@ interface ProcessedData {
   }>;
   invoices: Array<{
     serialNumber: string;
-    totalAmount: number;
+    customerName: string;
+    productName: string;
+    quantity: string;
+    totalAmount: string;
     date: string;
-    bankDetails: string;
+    bankDetails: null;
   }>;
 }
 
@@ -39,14 +40,23 @@ interface AIMapping {
     customerName: string;
     phoneNumber: string;
     address: string;
+    totalPurchaseAmount: null;
   };
   invoices: {
     serialNumber: string;
+    customerName: string;
+    productName: string;
+    quantity: string;
     totalAmount: string;
     date: string;
     bankDetails: null;
   };
 }
+
+
+
+type StringRecord = Record<string, string>;
+
 
 
 export default async function processAllData(excelData: ArrayBuffer): Promise<ProcessedData> {
@@ -55,148 +65,74 @@ export default async function processAllData(excelData: ArrayBuffer): Promise<Pr
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   // Convert worksheet to JSON
-  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-  const validData: unknown = [];
-  const summaryData = [];
-  const emptyRows = [];
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number)[][];
+
+  const validData: StringRecord[] = [];
+  const summaryData: Array<{ data: (string | number)[] }> = [];
+
 
   // Get headers from the first row
-  const headers = jsonData[0] || [];
+  const headers = (jsonData[0] || []) as string[];
 
-  jsonData.forEach((row, rowIndex) => {
-    const rowNumber = rowIndex + 1;
+  // Find the index where totals start
+  const totalsIndex = jsonData.findIndex(row =>
+    Array.isArray(row) &&
+    row.length > 0 &&
+    row[0] === 'Totals'
+  );
 
-    if (!row || row.every((cell) => cell === undefined || cell === null || cell === '')) {
-      emptyRows.push(rowNumber);
-      return;
+  // Process main data (before totals)
+  for (let i = 1; i < (totalsIndex === -1 ? jsonData.length : totalsIndex); i++) {
+    const row = jsonData[i];
+
+    // Skip empty rows
+    if (!row || row.every(cell => cell === undefined || cell === null || cell === '')) {
+      continue;
     }
 
-    if (!row[0] && row.some((cell) => cell !== undefined)) {
-      summaryData.push({
-        row_number: rowNumber,
-        data: row.filter((cell) => cell !== undefined),
-      });
-      return;
-    }
-
-    const rowData = {};
+    // Create record for the row
+    const rowData: StringRecord = {};
     let hasData = false;
 
     headers.forEach((header, index) => {
-      if (header) {
-        const value = row[index] || row[index] === 0 ? row[index] : header;
-        if (value !== undefined && value !== null && value !== '') {
-          rowData[header] = value;
-          hasData = true;
-        }
+      if (header && row[index] !== undefined && row[index] !== null && row[index] !== '') {
+        // Convert all values to strings
+        rowData[header] = row[index].toString();
+        hasData = true;
       }
-      null
     });
 
     if (hasData) {
-      validData.push({
-        row_number: rowNumber,
-        data: rowData
-      });
+      validData.push(rowData);
     }
-  });
-
-  return await firstProcess(validData);
-}
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-async function firstProcess(rawData: any[]): Promise<ProcessedData> {
-  try {
-    // Get AI mapping for the data structure
-    const mapping = await getAIMapping(rawData);
-    console.log('AI Mapping:', mapping);
-
-    // Process the data using the mapping
-    return applyMapping(rawData, mapping);
-  } catch (error) {
-    console.error('Error in firstProcess:', error);
-    throw error;
-  }
-}
-
-function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
-  if (!Array.isArray(jsonData)) {
-    console.error('Invalid jsonData:', jsonData);
-    throw new Error('jsonData must be an array');
   }
 
-  const result: ProcessedData = {
-    products: [],
-    customers: [],
-    invoices: []
-  };
+  // Process all rows after 'Totals' as summary data
+  if (totalsIndex !== -1) {
+    for (let i = totalsIndex; i < jsonData.length; i++) {
+      const row = jsonData[i];
 
-  // Process each row
-  jsonData.forEach(row => {
-    const data = row.data; // Access the data property of the row object
-
-    // Safely get values with fallbacks
-    const getValue = (fieldPath: string): string | number | null => {
-      if (!fieldPath) return null;
-
-      const parts = fieldPath.split('/').map(p => p.trim());
-      if (parts.length === 1) {
-        return data[fieldPath] ?? null;
+      // Skip completely empty rows
+      if (!row || row.every(cell => cell === undefined || cell === null || cell === '')) {
+        continue;
       }
-      // Handle computed fields like "Item Total Amount / Qty"
-      if (parts[1] === 'Qty') {
-        const total = parseFloat(String(data[parts[0]] || '0'));
-        const qty = parseFloat(String(data['Qty'] || '1'));
-        return isNaN(total / qty) ? 0 : total / qty;
+
+      // Add non-empty rows to summary data
+      const cleanRow = row.filter(cell => cell !== undefined && cell !== null && cell !== '');
+      if (cleanRow.length > 0) {
+        summaryData.push({
+          data: cleanRow
+        });
       }
-      return null;
-    };
-
-    // Map products
-    const product = {
-      productName: String(getValue(mapping.products.productName) || ''),
-      quantity: parseFloat(String(getValue(mapping.products.quantity) || '0')),
-      unitPrice: Number(getValue(mapping.products.unitPrice) || 0),
-      tax: parseFloat(String(getValue(mapping.products.tax) || '0')),
-      priceWithTax: parseFloat(String(getValue(mapping.products.priceWithTax) || '0'))
-    };
-
-    if (product.productName && product.quantity > 0) {
-      result.products.push(product);
     }
-
-    // Map customers
-    const customer = {
-      customerName: String(getValue(mapping.customers.customerName) || ''),
-      phoneNumber: parseInt(String(getValue(mapping.customers.phoneNumber) || '0')),
-      address: String(getValue(mapping.customers.address) || '')
-    };
-
-    if (customer.customerName && customer.phoneNumber &&
-      !result.customers.some(c => c.phoneNumber === customer.phoneNumber)) {
-      result.customers.push(customer);
-    }
-
-    // Map invoices
-    const invoice = {
-      serialNumber: String(getValue(mapping.invoices.serialNumber) || ''),
-      totalAmount: parseFloat(String(getValue(mapping.invoices.totalAmount) || '0')),
-      date: String(getValue(mapping.invoices.date) || ''),
-      bankDetails: null
-    };
-
-    if (invoice.serialNumber &&
-      !result.invoices.some(i => i.serialNumber === invoice.serialNumber)) {
-      result.invoices.push(invoice);
-    }
-  });
-
-  return result;
+  }
+  console.log(validData)
+  const res = await firstProcess(validData)
+  return res;
 }
 
-async function getAIMapping(jsonData: any[]): Promise<AIMapping> {
+async function getAIMapping(jsonData: StringRecord[]): Promise<AIMapping> {
   // Get 3 random sample rows
   const sampleRows = jsonData
     .sort(() => Math.random() - 0.5)
@@ -225,20 +161,20 @@ async function getAIMapping(jsonData: any[]): Promise<AIMapping> {
     Return ONLY a valid JSON object with the structure:
     {
       "mapping": {
-        "products": {
+        "products": [ 
           "productName": "<matching field name>",
           "quantity": "<matching field name>",
-          "unitPrice": "<matching field name or calculation>",
+          "unitPrice": "<matching field name>",
           "tax": "<matching field name>",
           "priceWithTax": "<matching field name>"
-        },
-        "customers": {
+        ],
+        "customers": [
           "customerName": "<matching field name>",
           "phoneNumber": "<matching field name>",
           "address": "<matching field name>"
           "totalPurchaseAmount": "<matching field name>",
-        },
-        "invoices": {
+        ],
+        "invoices": [
           "serialNumber": "<matching field name>",
           "customerName": "<matching field name>",
           "productName": "<matching field name>",
@@ -246,7 +182,7 @@ async function getAIMapping(jsonData: any[]): Promise<AIMapping> {
           "totalAmount": "<matching field name>",
           "date": "<matching field name>",
           "bankDetails": null
-        }
+        ]
       }
     }`;
 
@@ -270,3 +206,101 @@ async function getAIMapping(jsonData: any[]): Promise<AIMapping> {
     throw error;
   }
 }
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function firstProcess(rawData: any[]): Promise<ProcessedData> {
+  try {
+    // Get AI mapping for the data structure
+    const mapping = await getAIMapping(rawData);
+    console.log('AI Mapping:', mapping);
+
+    // Process the data using the mapping
+    return applyMapping(rawData, mapping);
+  } catch (error) {
+    console.error('Error in firstProcess:', error);
+    throw error;
+  }
+}
+
+function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
+  if (!Array.isArray(jsonData)) {
+    console.error('Invalid jsonData:', jsonData);
+    throw new Error('jsonData must be an array');
+  }
+
+  const result: ProcessedData = {
+    products: [],
+    customers: [],
+    invoices: []
+  };
+
+  jsonData.forEach(row => {
+    // Notice we're using row directly, not row.data
+    const getValue = (fieldPath: string): string | number | null => {
+      if (!fieldPath) return null;
+
+      // Handle computed fields
+      /*
+      if (fieldPath.includes('/')) {
+        const [total, qty] = fieldPath.split('/').map(p => p.trim());
+        if (qty === 'Qty') {
+          const totalAmount = parseFloat(String(row[total] || '0'));
+          const quantity = parseFloat(String(row['Qty'] || '1'));
+          return isNaN(totalAmount / quantity) ? 0 : totalAmount / quantity;
+        }
+      }
+      */
+      // Handle direct field access
+      return row[fieldPath] ?? null;
+    };
+
+    // Map products
+    const product = {
+      productName: String(getValue(mapping.products.productName) || ''),
+      quantity: String(parseFloat(String(getValue(mapping.products.quantity) || '0'))),
+      unitPrice: String(parseFloat(String(getValue(mapping.products.unitPrice) || '0'))),
+      tax: String(parseFloat(String(getValue(mapping.products.tax) || '0'))),
+      priceWithTax: String(parseFloat(String(getValue(mapping.products.priceWithTax) || '0')))
+    };
+
+    result.products.push(product);
+
+    // Map customers
+    const customer = {
+      customerName: String(getValue(mapping.customers.customerName) || ''),
+      phoneNumber: String(getValue(mapping.customers.phoneNumber) || ''),
+      address: String(getValue(mapping.customers.address) || ''),
+      totalPurchaseAmount: parseFloat(String(getValue('Item Total Amount') || '0'))
+    };
+
+    /*
+    if (customer.customerName && customer.phoneNumber) {
+      // Check if customer already exists
+      const existingCustomer = result.customers.find(
+        c => c.phoneNumber === customer.phoneNumber
+      );
+
+    if (existingCustomer) {
+      // Update total purchase amount for existing customer
+      existingCustomer.totalPurchaseAmount += customer.totalPurchaseAmount;
+    } else {
+    }
+  }*/
+    result.customers.push(customer);
+
+    // Map invoices
+    const invoice = {
+      serialNumber: String(getValue(mapping.invoices.serialNumber) || ''),
+      customerName: String(getValue(mapping.invoices.customerName) || ''),
+      productName: String(getValue(mapping.invoices.productName) || ''),
+      quantity: String(parseFloat(String(getValue(mapping.invoices.quantity) || '0'))),
+      totalAmount: String(parseFloat(String(getValue(mapping.invoices.totalAmount) || '0'))),
+      date: String(getValue(mapping.invoices.date) || ''),
+      bankDetails: null // Since it's null in mapping
+    };
+    result.invoices.push(invoice);
+
+  });
+
+  return result;
+}
+

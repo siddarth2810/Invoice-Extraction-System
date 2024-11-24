@@ -44,6 +44,8 @@ interface ExtractedData {
 
 
 export async function generateContent(formData: FormData) {
+
+
 	try {
 		const file = formData.get('file') as File;
 		if (!file || !(file instanceof File)) {
