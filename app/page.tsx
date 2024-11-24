@@ -5,7 +5,7 @@ import { RootState } from './redux/store'
 import { setInitialData } from './redux/slices/dataSlice'
 import { generateContent } from './pages/backend'
 import { setActiveTab, TabType } from './redux/slices/tabSlice'
-import { useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import ProductsTable from "@/components/Tables/ProductsTable"
 import CustomersTable from "@/components/Tables/CustomersTable"
 import InvoicesTable from "@/components/Tables/InvoicesTable"
@@ -26,37 +26,35 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
 
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setIsLoading(true);
-
-      const selectedFile = e.target.files?.[0];
-      if (!selectedFile) {
-        return;
-      }
-
-      const validFileTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel',
-        'application/pdf'
-      ];
-
-      const isValidType = validFileTypes.includes(selectedFile.type) ||
-        selectedFile.type.startsWith('image/');
-
-      if (!isValidType) {
-        alert('Please upload a PDF, Excel file, or image');
-        return;
-      }
-
-      setFile(selectedFile);
-    } catch (error) {
-      console.error('Error processing file:', error);
-      alert('Error processing file. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) {
+      return;
     }
-  };
+
+    const validFileTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'application/pdf'
+    ];
+
+    const isValidType = validFileTypes.includes(selectedFile.type) ||
+      selectedFile.type.startsWith('image/');
+
+    if (!isValidType) {
+      alert('Please upload a PDF, Excel file, or image');
+      return;
+    }
+
+    setFile(selectedFile);
+  }, []);
+
+  useEffect(() => {
+    if (file) {
+      // Perform any side effects related to file change here
+      console.log('File has been set:', file);
+    }
+  }, [file]);
 
   const handleGenerate = async () => {
     if (!file) {
@@ -77,7 +75,7 @@ export default function Home() {
       console.error('Failed to generate content', error)
       alert('Error processing file. Please try again.')
     } finally {
-      setIsLoading(false)
+      return setIsLoading(false)
     }
   }
 

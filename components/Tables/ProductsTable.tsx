@@ -95,7 +95,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 												className="w-full"
 											/>
 										) : (
-											product.unitPrice.toFixed(2)
+											product.unitPrice
 										)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-right">
@@ -107,11 +107,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products }) => {
 												className="w-full"
 											/>
 										) : (
-											product.tax.toFixed(2)
+											product.tax
 										)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-right">
-										{product.priceWithTax.toFixed(2)}
+										{product.priceWithTax}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-center">
 										{editingId === product.id ? (

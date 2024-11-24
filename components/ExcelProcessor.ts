@@ -1,31 +1,39 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as XLSX from 'xlsx';
-
-// ... keeping the interfaces as they are ...
+import { v4 as uuidv4 } from 'uuid';
 
 interface ProcessedData {
-  products: Array<{
-    productName: string;
-    quantity: string;
-    unitPrice: string;
-    tax: string;
-    priceWithTax: string;
-  }>;
-  customers: Array<{
-    customerName: string;
-    phoneNumber: string;  // Changed to string since phone numbers should be strings
-    address: string;
-    totalPurchaseAmount: number;
-  }>;
-  invoices: Array<{
-    serialNumber: string;
-    customerName: string;
-    productName: string;
-    quantity: string;
-    totalAmount: string;
-    date: string;
-    bankDetails: null;
-  }>;
+  products: Product[];
+  customers: Customer[];
+  invoices: Invoice[];
+}
+
+interface Product {
+  id: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  tax: number;
+  priceWithTax: number;
+}
+
+interface Customer {
+  id: string;
+  customerName: string;
+  phoneNumber: string;
+  address: string;
+  totalPurchaseAmount: number;
+}
+
+interface Invoice {
+  id: string;
+  serialNumber: string;
+  customerName: string;
+  productName: string;
+  quantity: number;
+  priceWithTax: number;
+  date: string;
+  bankDetails: string | null;
 }
 
 interface AIMapping {
@@ -40,19 +48,18 @@ interface AIMapping {
     customerName: string;
     phoneNumber: string;
     address: string;
-    totalPurchaseAmount: null;
+    totalPurchaseAmount: string | null;
   };
   invoices: {
     serialNumber: string;
     customerName: string;
     productName: string;
     quantity: string;
-    totalAmount: string;
+    priceWithTax: string;
     date: string;
-    bankDetails: null;
+    bankDetails: string | null;
   };
 }
-
 
 
 type StringRecord = Record<string, string>;
@@ -153,7 +160,8 @@ async function getAIMapping(jsonData: StringRecord[]): Promise<AIMapping> {
     Analyze these rows and create a mapping to this structure, use their row numbers to keep track:
     - products: (productName, quantity, unitPrice, tax, priceWithTax)
     - customers: (customerName, phoneNumber, address, total Purchase Amount)
-    - invoices: (serialNumber, customerName, productName, quantity totalAmount, bankDetails, Date)
+    - invoices: (serialNumber, customerName, productName, quantity,price with Tax, bankDetails, Date)
+    Look at the sample data and determine which fields best match each required field.
     Look at the sample data and determine which fields best match each required field.
     For computed fields like unitPrice, you can specify calculations (e.g. "Item Total Amount / Qty").
     If a field doesn't have a clear match, return null.
@@ -179,21 +187,20 @@ async function getAIMapping(jsonData: StringRecord[]): Promise<AIMapping> {
           "customerName": "<matching field name>",
           "productName": "<matching field name>",
           "quantity": "<matching field name>",
-          "totalAmount": "<matching field name>",
+          "priceWithTax": "<matching field name>",
           "date": "<matching field name>",
           "bankDetails": null
         ]
       }
-    }`;
+    `;
 
+  const response = await model.generateContent(prompt);
+  const result = response.response.text();
+
+  if (!result) {
+    throw new Error('Empty response from AI');
+  }
   try {
-    const response = await model.generateContent(prompt);
-    const result = response.response.text();
-
-    if (!result) {
-      throw new Error('Empty response from AI');
-    }
-
     const jsonMatch = result.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No valid JSON object found in response');
@@ -233,74 +240,84 @@ function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
     invoices: []
   };
 
+  const productMap = new Map<string, Product>();
+  const customerMap = new Map<string, Customer>();
+
   jsonData.forEach(row => {
-    // Notice we're using row directly, not row.data
-    const getValue = (fieldPath: string): string | number | null => {
+    const getValue = (fieldPath: string | null): string | number | null => {
       if (!fieldPath) return null;
 
-      // Handle computed fields
-      /*
       if (fieldPath.includes('/')) {
-        const [total, qty] = fieldPath.split('/').map(p => p.trim());
-        if (qty === 'Qty') {
-          const totalAmount = parseFloat(String(row[total] || '0'));
-          const quantity = parseFloat(String(row['Qty'] || '1'));
-          return isNaN(totalAmount / quantity) ? 0 : totalAmount / quantity;
-        }
+        const [numerator, denominator] = fieldPath.split('/').map(p => p.trim());
+        const numeratorValue = parseFloat(String(row[numerator] || '0'));
+        const denominatorValue = parseFloat(String(row[denominator] || '1'));
+        return isNaN(numeratorValue / denominatorValue) ? 0 : numeratorValue / denominatorValue;
       }
-      */
-      // Handle direct field access
+
       return row[fieldPath] ?? null;
     };
 
-    // Map products
-    const product = {
-      productName: String(getValue(mapping.products.productName) || ''),
-      quantity: String(parseFloat(String(getValue(mapping.products.quantity) || '0'))),
-      unitPrice: String(parseFloat(String(getValue(mapping.products.unitPrice) || '0'))),
-      tax: String(parseFloat(String(getValue(mapping.products.tax) || '0'))),
-      priceWithTax: String(parseFloat(String(getValue(mapping.products.priceWithTax) || '0')))
+    const parseNumber = (value: string | number | null): number => {
+      if (value === null) return 0;
+      const parsed = typeof value === 'string' ? parseFloat(value) : value;
+      return isNaN(parsed) ? 0 : parsed;
     };
 
-    result.products.push(product);
+    // Map products
+    const productName = String(getValue(mapping.products.productName) || '');
+    if (productName) {
+      let product = productMap.get(productName);
+      if (!product) {
+        product = {
+          id: uuidv4(),
+          productName,
+          quantity: 0,
+          unitPrice: 0,
+          tax: 0,
+          priceWithTax: 0
+        };
+        productMap.set(productName, product);
+      }
+      product.quantity += parseNumber(getValue(mapping.products.quantity));
+      product.unitPrice = parseNumber(getValue(mapping.products.unitPrice));
+      product.tax = parseNumber(getValue(mapping.products.tax));
+      product.priceWithTax = parseNumber(getValue(mapping.products.priceWithTax));
+    }
 
     // Map customers
-    const customer = {
-      customerName: String(getValue(mapping.customers.customerName) || ''),
-      phoneNumber: String(getValue(mapping.customers.phoneNumber) || ''),
-      address: String(getValue(mapping.customers.address) || ''),
-      totalPurchaseAmount: parseFloat(String(getValue('Item Total Amount') || '0'))
-    };
-
-    /*
-    if (customer.customerName && customer.phoneNumber) {
-      // Check if customer already exists
-      const existingCustomer = result.customers.find(
-        c => c.phoneNumber === customer.phoneNumber
-      );
-
-    if (existingCustomer) {
-      // Update total purchase amount for existing customer
-      existingCustomer.totalPurchaseAmount += customer.totalPurchaseAmount;
-    } else {
+    const customerName = String(getValue(mapping.customers.customerName) || '');
+    const phoneNumber = String(getValue(mapping.customers.phoneNumber) || '');
+    if (customerName && phoneNumber) {
+      let customer = customerMap.get(phoneNumber);
+      if (!customer) {
+        customer = {
+          id: uuidv4(),
+          customerName,
+          phoneNumber,
+          address: String(getValue(mapping.customers.address) || ''),
+          totalPurchaseAmount: 0
+        };
+        customerMap.set(phoneNumber, customer);
+      }
+      customer.totalPurchaseAmount += parseNumber(getValue(mapping.customers.totalPurchaseAmount) || getValue('Item Total Amount'));
     }
-  }*/
-    result.customers.push(customer);
 
     // Map invoices
-    const invoice = {
+    const invoice: Invoice = {
+      id: uuidv4(),
       serialNumber: String(getValue(mapping.invoices.serialNumber) || ''),
       customerName: String(getValue(mapping.invoices.customerName) || ''),
       productName: String(getValue(mapping.invoices.productName) || ''),
-      quantity: String(parseFloat(String(getValue(mapping.invoices.quantity) || '0'))),
-      totalAmount: String(parseFloat(String(getValue(mapping.invoices.totalAmount) || '0'))),
+      quantity: parseNumber(getValue(mapping.invoices.quantity)),
+      priceWithTax: parseNumber(getValue(mapping.invoices.priceWithTax)),
       date: String(getValue(mapping.invoices.date) || ''),
-      bankDetails: null // Since it's null in mapping
+      bankDetails: getValue(mapping.invoices.bankDetails) as string | null
     };
     result.invoices.push(invoice);
-
   });
+
+  result.products = Array.from(productMap.values());
+  result.customers = Array.from(customerMap.values());
 
   return result;
 }
-
