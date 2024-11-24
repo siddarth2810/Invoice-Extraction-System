@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Check, X } from 'lucide-react';
 import { updateCustomer, Customer } from '@/app/redux/slices/dataSlice';
 import {
-
 	Dialog,
 	DialogContent,
 	DialogHeader,
@@ -21,7 +20,6 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 	const dispatch = useDispatch();
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [selectedText, setSelectedText] = useState<string | null>(null);
-
 	const [editData, setEditData] = useState<Partial<Customer>>({});
 
 	const startEdit = (customer: Customer) => {
@@ -58,21 +56,21 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 	return (
 		<TabsContent value="customers">
 			{customers.length > 0 ? (
-				<div className="bg-white shadow-md rounded-lg overflow-hidden">
+				<div className="table-container">
 					<table className="w-full">
-						<thead className="bg-gray-100 border-b">
+						<thead className="table-header">
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-								<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchase Amount</th>
-								<th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+								<th>Name</th>
+								<th>Phone Number</th>
+								<th>Address</th>
+								<th>Total Purchase Amount</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-gray-200">
+						<tbody className="table-body">
 							{customers.map((customer) => (
-								<tr key={customer.phoneNumber} className="hover:bg-gray-50 transition-colors">
-									< td className="px-6 py-4 whitespace-nowrap" >
+								<tr key={customer.phoneNumber} className="table-row">
+									<td className="table-cell">
 										{editingId === customer.id ? (
 											<Input
 												value={editData.customerName || ''}
@@ -83,7 +81,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 											customer.customerName
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === customer.id ? (
 											<Input
 												value={editData.phoneNumber || ''}
@@ -94,7 +92,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 											customer.phoneNumber || '-'
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="table-cell">
 										{editingId === customer.id ? (
 											<Input
 												value={editData.address || ''}
@@ -128,17 +126,18 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 											</div>
 										)}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-right">
+
+									<td className="table-cell">
 										{customer.totalPurchaseAmount}
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-center">
+									<td className="table-cell-center">
 										{editingId === customer.id ? (
-											<div className="flex justify-center space-x-2">
+											<div className="button-group">
 												<Button
 													onClick={saveChanges}
 													variant="ghost"
 													size="icon"
-													className="h-8 w-8"
+													className="save-button"
 												>
 													<Check className="h-4 w-4" />
 												</Button>
@@ -146,7 +145,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 													onClick={cancelEdit}
 													variant="ghost"
 													size="icon"
-													className="h-8 w-8"
+													className="cancel-button"
 												>
 													<X className="h-4 w-4" />
 												</Button>
@@ -156,7 +155,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 												onClick={() => startEdit(customer)}
 												variant="ghost"
 												size="icon"
-												className="h-8 w-8"
+												className="edit-button"
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
@@ -166,11 +165,11 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ customers }) => {
 							))}
 						</tbody>
 					</table>
-				</div >
+				</div>
 			) : (
-				<p className="text-gray-500 text-center py-4">No customer data available</p>
+				<p className="empty-message">No customer data available</p>
 			)}
-		</TabsContent >
+		</TabsContent>
 	);
 };
 
