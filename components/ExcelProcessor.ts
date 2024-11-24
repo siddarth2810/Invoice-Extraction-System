@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as XLSX from 'xlsx';
+//import { Product, Customer, Invoice } from "@/app/redux/slices/dataSlice"
 
 // ... keeping the interfaces as they are ...
 
@@ -52,7 +53,6 @@ interface AIMapping {
     bankDetails: null;
   };
 }
-
 
 
 type StringRecord = Record<string, string>;
@@ -239,7 +239,6 @@ function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
       if (!fieldPath) return null;
 
       // Handle computed fields
-      /*
       if (fieldPath.includes('/')) {
         const [total, qty] = fieldPath.split('/').map(p => p.trim());
         if (qty === 'Qty') {
@@ -248,7 +247,7 @@ function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
           return isNaN(totalAmount / quantity) ? 0 : totalAmount / quantity;
         }
       }
-      */
+
       // Handle direct field access
       return row[fieldPath] ?? null;
     };
@@ -284,7 +283,8 @@ function applyMapping(jsonData: any[], mapping: AIMapping): ProcessedData {
       existingCustomer.totalPurchaseAmount += customer.totalPurchaseAmount;
     } else {
     }
-  }*/
+  }
+      */
     result.customers.push(customer);
 
     // Map invoices
