@@ -30,7 +30,7 @@ Traditional Approach (Inefficient):
 
 Our Approach:
 - 40 products × (product details only) + 1 invoice detail
--  Reduced token usage and processing time
+-  Reduced token usage and latency
 
 ## Excel Processing Strategy 
 ```typescript
@@ -64,17 +64,21 @@ const mapping = {
 ```
 
 
-## Installation
+## How to run this locally 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/siddarth2810/data-extraction.git
-   cd data-extraction
+   git clone https://github.com/siddarth2810/Invoice-Extraction-System.git
+   cd Invoice-Extraction-System
    ```
 
 2. Install dependencies:
    ```bash
    npm install
+   ```
+3. Set up environment variable:
+   ```bash
+    API_KEY=<your_api_key>
    ```
 
 ## Usage
