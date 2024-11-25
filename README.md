@@ -1,7 +1,36 @@
 
 # Swipe assignment
 
-This repository contains a system for extracting invoice data from various file formats using the Gemini API. The project is built using TypeScript and JavaScript.
+![screenshot-20241125-125124Z-selected](https://github.com/user-attachments/assets/c6705201-8ef8-41e3-bfc7-852d84e5955e)
+
+## PDF/Image Processing Strategy 
+ First the images or pdfs are converted into buffer, and then to base64 which is sent to the gemini API
+### Split Processing Approach
+Instead of generating complete data for each product, we split into parallel operations:
+
+```typescript
+// 1. Extract Product Details Only
+const productsResult = await model.generateContent([
+  { inlineData: { data: extractedText } },
+  { text: "Extract ONLY product details..." }
+]);
+
+// 2. Extract Invoice/Customer Metadata Separately
+const metadataResult = await model.generateContent([
+  { inlineData: { data: extractedText } },
+  { text: "Extract ONLY customer and invoice details..." }
+]);
+```
+
+### Why This Works Better? 
+
+Traditional Approach (Inefficient):
+- 40 products × (product details + invoice details) = 40  JSON objects
+- High token usage, lots of repeated data
+
+Our Approach:
+- 40 products × (product details only) + 1 invoice detail
+-  Reduced token usage and processing time
 
 ## Excel Processing Strategy 
 ```typescript
@@ -34,34 +63,6 @@ const mapping = {
 };
 ```
 
-## PDF/Image Processing Strategy 
-
-### Split Processing Approach
-Instead of generating complete data for each product, we split into parallel operations:
-
-```typescript
-// 1. Extract Product Details Only
-const productsResult = await model.generateContent([
-  { inlineData: { data: extractedText } },
-  { text: "Extract ONLY product details..." }
-]);
-
-// 2. Extract Invoice/Customer Metadata Separately
-const metadataResult = await model.generateContent([
-  { inlineData: { data: extractedText } },
-  { text: "Extract ONLY customer and invoice details..." }
-]);
-```
-
-### Why This Works Better? 
-
-Traditional Approach (Inefficient):
-- 40 products × (product details + invoice details) = 40  JSON objects
-- High token usage, lots of repeated data
-
-Our Approach:
-- 40 products × (product details only) + 1 invoice detail
--  Reduced token usage and processing time
 
 ## Installation
 
